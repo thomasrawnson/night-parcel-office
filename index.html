@@ -3,601 +3,133 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Night Parcel Office — Prototype v2</title>
-
+<title>Night Parcel Office — Prototype v3</title>
 <style>
-:root {
-  --panel:#1b241f;
-  --line:#46534b;
-  --paper:#ece5cf;
-  --ink:#1f231f;
-  --green:#78a986;
-  --amber:#d0a75f;
-  --red:#c76b63;
+:root{
+  --bg:#101612;--panel:#19231e;--panel2:#202d26;--line:#46554b;
+  --paper:#ece5cf;--ink:#1f231f;--desk:#5b402d;--desk2:#3f2d22;
+  --green:#7db18b;--amber:#d1a75e;--red:#d46e65;--muted:#9cab9f;
 }
-
-* { box-sizing:border-box; }
-
-body {
-  margin:0;
-  min-height:100vh;
-  background:linear-gradient(#121915 0 45%,#302419 45%);
-  color:#edf2ed;
-  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;background:
+    linear-gradient(#101612 0 42%,#332417 42% 100%);
+  color:#eef4ef;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
+.wrap{max-width:1180px;margin:auto;padding:18px}
+.light{height:11px;width:min(540px,52%);min-width:230px;margin:0 auto 14px;border-radius:3px;background:#dcebdd;box-shadow:0 0 30px #c8e7cb66}
+.top{display:flex;justify-content:space-between;gap:16px;margin-bottom:14px}
+.kicker{font-size:11px;letter-spacing:.18em;color:#9db0a3}
+.top h1{margin:5px 0;font-size:clamp(22px,3vw,34px)}
+.meta{text-align:right;color:#aeb8b0;font-size:12px;line-height:1.5}
+.grid{display:grid;grid-template-columns:285px minmax(0,1fr) 250px;gap:15px}
+.panel{background:linear-gradient(#1c2821,#17211c);border:1px solid var(--line);border-radius:10px;padding:14px}
+.panel h2{font-size:12px;letter-spacing:.15em;margin:0 0 12px}
+.rules{display:grid;gap:9px}
+.rule{background:var(--paper);color:var(--ink);padding:11px;border-radius:6px;border-left:7px solid #7e8a81}
+.rule b{display:block;font-size:11px;letter-spacing:.08em;margin-bottom:4px}
+.rule .formula{font-size:15px;font-weight:900;line-height:1.25}
+.rule.heavy{border-color:var(--amber)} .rule.live{border-color:var(--green)} .rule.mirror{border-color:var(--red)}
+.rule.amend{border-color:#9f91c6;transform:rotate(-.4deg)}
+.rule.amend em{text-decoration:line-through 3px #8d3030;font-style:normal}
+.notice{margin-top:11px;font-size:11px;line-height:1.45;color:#9dac9f}
 
-.wrap {
-  max-width:1180px;
-  margin:auto;
-  padding:18px;
-}
-
-.light {
-  height:12px;
-  width:48%;
-  min-width:220px;
-  margin:0 auto 14px;
-  background:#dcebdc;
-  border-radius:3px;
-  box-shadow:0 0 28px #b7d8bb66;
-}
-
-.top {
-  display:flex;
-  justify-content:space-between;
-  gap:18px;
-  margin-bottom:14px;
-}
-
-.kicker {
-  font-size:11px;
-  letter-spacing:.18em;
-  color:#9bb09f;
-}
-
-.top h1 {
-  font-size:clamp(22px,3vw,34px);
-  margin:5px 0;
-}
-
-.meta {
-  text-align:right;
-  color:#aeb9b0;
-  font-size:12px;
-  line-height:1.55;
-}
-
-.grid {
-  display:grid;
-  grid-template-columns:300px 1fr 250px;
-  gap:15px;
-}
-
-.panel {
-  background:#1b241f;
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:14px;
-}
-
-.panel h2 {
-  font-size:12px;
-  letter-spacing:.15em;
-  margin:0 0 12px;
-}
-
-/* RULES */
-
-.rules {
-  display:grid;
-  gap:8px;
-}
-
-.rule {
-  background:var(--paper);
-  color:var(--ink);
-  padding:10px;
-  border-radius:6px;
-  border-left:7px solid #78877c;
-}
-
-.rule b {
-  display:block;
-  font-size:12px;
-  letter-spacing:.08em;
-  margin-bottom:3px;
-}
-
-.rule .formula {
-  font-size:15px;
-  font-weight:900;
-}
-
-.rule small {
-  display:block;
-  margin-top:3px;
-  color:#666d66;
-}
-
-.rule.heavy { border-color:var(--amber); }
-.rule.live { border-color:var(--green); }
-.rule.dead { border-color:#8f8a86; }
-.rule.mirror { border-color:var(--red); }
-
-.rule.corrupt {
-  transform:rotate(-.5deg);
-}
-
-.rule.corrupt em {
-  text-decoration:line-through 3px #922;
-  font-style:normal;
-}
-
-/* DESK */
-
-.desk {
-  background:linear-gradient(#624832,#4d3727);
-  border:1px solid #70533d;
-  border-radius:12px;
+.desk{
+  min-height:605px;position:relative;overflow:hidden;border-radius:12px;
+  border:1px solid #6c4f3a;
+  background:
+    radial-gradient(circle at 20% 76%,#ffffff10 0 1px,transparent 2px),
+    linear-gradient(#644832,#4b3526);
   padding:16px;
-  min-height:580px;
-  position:relative;
-  overflow:hidden;
 }
-
-.belt {
-  height:38px;
-  margin:-16px -16px 14px;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      #242c28 0 35px,
-      #171d1a 35px 43px
-    );
-  border-bottom:2px solid #0b0e0c;
-  position:relative;
+.belt{height:38px;margin:-16px -16px 14px;background:repeating-linear-gradient(90deg,#26302b 0 35px,#18201c 35px 43px);border-bottom:2px solid #0b0e0c;position:relative}
+.belt:after{content:"INCOMING";position:absolute;right:12px;top:11px;font-size:10px;letter-spacing:.2em;color:#87958b}
+.window{
+  position:absolute;right:18px;top:63px;width:108px;height:86px;border:6px solid #2b312e;
+  background:linear-gradient(#aab4ad33,#70807822),repeating-linear-gradient(90deg,transparent 0 18px,#c9d2cb11 19px 20px);
+  box-shadow:inset 0 0 24px #0008;overflow:hidden;z-index:1;
 }
-
-.belt:after {
-  content:"INCOMING";
-  position:absolute;
-  right:12px;
-  top:11px;
-  font-size:10px;
-  letter-spacing:.2em;
-  color:#87958b;
+.window:before{content:"";position:absolute;left:50%;top:16px;width:34px;height:52px;border-radius:50% 50% 42% 42%;background:#0b0f0dcc;transform:translateX(-50%) translateY(45px);opacity:0;transition:.7s}
+.window.silhouette:before{transform:translateX(-50%) translateY(0);opacity:.85}
+.progress{height:6px;background:#222b27;border-radius:5px;overflow:hidden}.progress span{display:block;height:100%;width:0;background:#abc8af;transition:.25s}
+.stage{min-height:372px;display:flex;align-items:center;justify-content:center;padding:18px 0;position:relative;z-index:2}
+.parcel{
+  width:min(550px,96%);min-height:315px;position:relative;padding:24px;border-radius:9px;
+  background:#9b734e;border:1px solid #c49770;box-shadow:0 18px 30px #0005,inset 0 0 0 4px #0000000c;
+  overflow:hidden;transition:transform .4s ease,opacity .35s ease,filter .25s ease;
 }
-
-.progress {
-  height:6px;
-  background:#252e29;
-  border-radius:4px;
-  overflow:hidden;
+.parcel.arrive{animation:arrive .38s ease both}
+.parcel.route-deliver{transform:translateY(210px) rotate(2deg);opacity:0}
+.parcel.route-return{transform:translateX(-540px) rotate(-8deg);opacity:0}
+.parcel.route-quarantine{transform:translateX(520px) rotate(8deg) scale(.88);opacity:0}
+.tape{position:absolute;top:0;bottom:0;left:47%;width:44px;background:#e0c28c66;border-left:1px solid #7b563055;border-right:1px solid #7b563055}
+.parcel.dented:before{content:"";position:absolute;width:130px;height:65px;border-radius:50%;background:#5d402b33;left:14px;bottom:18px;transform:rotate(-14deg)}
+.label{position:relative;z-index:3;background:#f0ead8;color:#22261f;padding:14px;border:1px solid #c7bea7;border-radius:3px;transform:rotate(-.6deg);box-shadow:0 2px 4px #0002}
+.dest{font-size:23px;font-weight:900;line-height:1.04;margin:7px 0 9px}
+.label-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}.f{font-size:12px}.f b{display:block;font-size:9px;letter-spacing:.1em;color:#71776f}
+.marks{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}.mark{font-size:9px;padding:4px 6px;border:1px solid #767a70;background:#ddd6c0}
+.oddity{position:relative;z-index:3;margin-top:13px;background:#6b4b34;border:1px dashed #e7bf8d;color:#f7e4ca;padding:9px 10px;border-radius:4px;font-size:13px}
+.back-label{display:none;position:relative;z-index:3;margin-top:12px;background:#d7ccb2;color:#2b2c25;border:2px dashed #7d7461;padding:12px;transform:rotate(.8deg);font-size:13px}
+.parcel.flipped .label,.parcel.flipped .oddity{display:none}.parcel.flipped .back-label{display:block}
+.parcel.wiggle{animation:wiggle 1.4s infinite ease-in-out}
+.parcel.poked{animation:poke .28s ease 2}
+.parcel.shiny:after{content:"";position:absolute;inset:-45%;background:linear-gradient(105deg,transparent 40%,#fff8 50%,transparent 60%);animation:shine 2.2s infinite}
+.eyes{position:absolute;right:28px;bottom:34px;display:none;gap:8px;z-index:4}
+.eyes span{width:23px;height:15px;border-radius:50%;background:#faf3d8;position:relative}.eyes span:after{content:"";position:absolute;width:7px;height:7px;background:#111;border-radius:50%;left:8px;top:4px}
+.has-eyes .eyes{display:flex}
+.paw{display:none;position:absolute;right:74px;bottom:23px;z-index:4;font-size:38px;transform:rotate(-20deg)}
+.parcel.show-paw .paw{display:block;animation:paw .75s ease}
+.frost:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 25% 30%,#dff5ff77,transparent 18%),linear-gradient(120deg,#def4ff22,transparent 45%);pointer-events:none}
+.teeth .oddity:after{content:"  • • • • •";letter-spacing:2px;color:#fff8c9}
+.speech{
+  position:absolute;left:50%;top:115px;transform:translateX(-50%) translateY(6px);
+  background:#eff1e6;color:#222;padding:8px 10px;border-radius:7px;font-size:12px;opacity:0;pointer-events:none;z-index:8;transition:.2s;max-width:280px;text-align:center;
 }
+.speech.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-.progress span {
-  height:100%;
-  display:block;
-  background:#abc7b0;
-  width:0;
-  transition:.25s;
-}
+.stamps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.stamp,.tool-list button,.restart{font:inherit;border-radius:5px;cursor:pointer}
+.stamp{font-weight:900;letter-spacing:.06em;border:3px solid currentColor;background:#111714;padding:12px}
+.deliver{color:#87c595}.return{color:#deb36b}.quarantine{color:#dd776e}.stamp:active{transform:translateY(4px)}
+.stamp-mark{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-9deg);font-size:40px;border:7px solid currentColor;padding:9px 15px;font-weight:900;opacity:0;z-index:9;pointer-events:none}
+.stamp-mark.show{animation:mark .52s ease-out}
 
-.stage {
-  min-height:360px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:14px 0;
-}
+.tool-list{display:grid;gap:7px}.tool-list button{border:1px solid #607067;background:#2a3730;color:#edf3ee;padding:10px;text-align:left}.tool-list button:hover{background:#36443d}
+.result{min-height:94px;margin-top:10px;border-top:1px dashed #526158;padding-top:10px;font-size:12px;line-height:1.45;color:#d8e0da}.result strong{display:block;font-size:14px;color:#fff;margin-bottom:3px}
+.cage{height:92px;margin-top:10px;border:2px solid #6a766e;background:repeating-linear-gradient(90deg,transparent 0 12px,#6a766e 13px 15px);position:relative;overflow:hidden}
+.cage:after{content:"QUARANTINE";position:absolute;left:6px;bottom:4px;background:#1a241f;color:#bec9c0;padding:2px 5px;font-size:9px}
+.cage .cage-eyes{display:none;position:absolute;left:36px;top:28px;gap:9px}.cage .cage-eyes.show{display:flex}.cage .cage-eyes span{width:17px;height:11px;border-radius:50%;background:#f7f0d6;position:relative}.cage .cage-eyes span:after{content:"";position:absolute;width:5px;height:5px;border-radius:50%;background:#111;left:6px;top:3px}
+.cage.rattle{animation:rattle .22s linear 5}
+.complaint{background:#ded5bd;color:#282820;padding:8px;margin-top:7px;transform:rotate(1deg);font-size:11px}
 
-.parcel {
-  width:min(560px,96%);
-  min-height:320px;
-  background:#9a734e;
-  border:1px solid #c2956f;
-  border-radius:8px;
-  position:relative;
-  padding:24px;
-  box-shadow:0 16px 28px #0005;
-  overflow:hidden;
-  transition:.25s;
-}
+.prop{position:absolute;z-index:1;pointer-events:none}
+.mug{left:20px;bottom:20px;width:54px;height:46px;border:5px solid #b9b0a0;border-radius:5px 5px 18px 18px;background:#2a3430}.mug:after{content:"";position:absolute;right:-20px;top:8px;width:20px;height:21px;border:5px solid #b9b0a0;border-left:0;border-radius:0 15px 15px 0}
+.badge{left:91px;bottom:29px;background:#d7d1bc;color:#252821;padding:6px 8px;transform:rotate(-5deg);font-size:9px;box-shadow:0 2px 3px #0004}.badge b{display:block;font-size:11px}
+.biscuit{right:32px;bottom:28px;width:48px;height:37px;background:#b88952;border-radius:52% 48% 47% 53%;transform:rotate(14deg);box-shadow:inset 7px 2px #8c653f55}.biscuit:after{content:"•  •  •";position:absolute;color:#65462d;left:8px;top:8px;font-size:12px}
 
-.parcel.arrive {
-  animation:arrive .35s ease both;
-}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(24px);opacity:0;background:#eee7d0;color:#222;padding:10px 14px;border-radius:5px;box-shadow:0 8px 30px #0006;transition:.2s;z-index:30;max-width:86vw;text-align:center;font-size:12px}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.summary{display:none;max-width:760px;margin:28px auto;background:#e5dec8;color:#232620;padding:28px;border-radius:8px}.summary.show{display:block}.summary h2{font-size:25px;margin:0}.grade{font-size:38px;font-weight:900;margin:18px 0}.summary li{margin:7px 0}.restart{background:#25312b;color:#eef4ef;border:1px solid #5e7166;padding:12px;max-width:260px}
+.footer{text-align:center;color:#7d8a81;font-size:10px;margin-top:12px}
 
-.parcel.leave {
-  transform:translateY(60px) scale(.96);
-  opacity:0;
-}
-
-.tape {
-  position:absolute;
-  top:0;
-  bottom:0;
-  left:47%;
-  width:44px;
-  background:#dec38d66;
-}
-
-.label {
-  position:relative;
-  z-index:2;
-  background:#f0ead8;
-  color:#21241f;
-  padding:14px;
-  border:1px solid #c8bea7;
-  border-radius:3px;
-  transform:rotate(-.5deg);
-}
-
-.dest {
-  font-size:22px;
-  font-weight:900;
-  line-height:1.05;
-  margin:7px 0 9px;
-}
-
-.label-grid {
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px 14px;
-}
-
-.f {
-  font-size:12px;
-}
-
-.f b {
-  display:block;
-  font-size:9px;
-  color:#70766e;
-  letter-spacing:.1em;
-}
-
-.marks {
-  display:flex;
-  flex-wrap:wrap;
-  gap:5px;
-  margin-top:9px;
-}
-
-.mark {
-  background:#dbd3bd;
-  border:1px solid #7b7e72;
-  font-size:9px;
-  padding:4px 6px;
-}
-
-.oddity {
-  position:relative;
-  z-index:2;
-  margin-top:13px;
-  border:1px dashed #e4bd8b;
-  background:#6a4b34;
-  color:#fae5c9;
-  padding:10px;
-  border-radius:4px;
-  font-size:13px;
-}
-
-/* EYES */
-
-.eyes {
-  position:absolute;
-  right:30px;
-  bottom:36px;
-  display:none;
-  gap:8px;
-  z-index:3;
-}
-
-.eyes span {
-  width:22px;
-  height:14px;
-  background:#f7f2d9;
-  border-radius:50%;
-  display:block;
-  position:relative;
-}
-
-.eyes span:after {
-  content:"";
-  position:absolute;
-  width:6px;
-  height:6px;
-  background:#111;
-  border-radius:50%;
-  left:8px;
-  top:4px;
-}
-
-.parcel.has-eyes .eyes {
-  display:flex;
-}
-
-.parcel.wiggle {
-  animation:wiggle 1.8s infinite ease-in-out;
-}
-
-.parcel.shiny:after {
-  content:"";
-  position:absolute;
-  inset:-35%;
-  background:
-    linear-gradient(
-      105deg,
-      transparent 40%,
-      #fff6 49%,
-      transparent 58%
-    );
-  animation:shine 2.4s infinite;
-}
-
-/* TOOLS */
-
-.tool-list {
-  display:grid;
-  gap:7px;
-}
-
-.tool-list button,
-.stamp,
-.restart {
-  font:inherit;
-  border-radius:5px;
-  border:1px solid #607066;
-  background:#2b3731;
-  color:#edf3ee;
-  padding:10px;
-  cursor:pointer;
-}
-
-.tool-list button:hover,
-.restart:hover {
-  background:#37453e;
-}
-
-.result {
-  min-height:92px;
-  margin-top:10px;
-  border-top:1px dashed #526158;
-  padding-top:10px;
-  font-size:12px;
-  line-height:1.45;
-  color:#d9e2da;
-}
-
-.result strong {
-  display:block;
-  color:#fff;
-  font-size:14px;
-  margin-bottom:3px;
-}
-
-/* STAMPS */
-
-.stamps {
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  margin-top:12px;
-}
-
-.stamp {
-  font-weight:900;
-  letter-spacing:.06em;
-  border-width:3px;
-  background:#131816;
-}
-
-.deliver { color:#86c493; }
-.return { color:#ddb26a; }
-.quarantine { color:#db756b; }
-
-.stamp:active {
-  transform:translateY(4px);
-}
-
-.stamp-mark {
-  position:absolute;
-  left:50%;
-  top:49%;
-  transform:translate(-50%,-50%) rotate(-9deg);
-  font-size:38px;
-  border:6px solid currentColor;
-  padding:9px 15px;
-  font-weight:900;
-  opacity:0;
-  z-index:8;
-  pointer-events:none;
-}
-
-.stamp-mark.show {
-  animation:mark .55s ease-out;
-}
-
-.notice {
-  margin-top:12px;
-  font-size:11px;
-  color:#aab7ad;
-  line-height:1.45;
-}
-
-/* QUARANTINE */
-
-.cage {
-  height:70px;
-  margin-top:10px;
-  border:2px solid #6a756d;
-  background:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 12px,
-      #6a756d 13px 15px
-    );
-  position:relative;
-}
-
-.cage:after {
-  content:"QUARANTINE";
-  position:absolute;
-  left:6px;
-  bottom:4px;
-  background:#1b241f;
-  color:#bcc8be;
-  padding:2px 5px;
-  font-size:9px;
-}
-
-.complaint {
-  background:#ded5bd;
-  color:#282820;
-  padding:8px;
-  margin-top:7px;
-  transform:rotate(1deg);
-  font-size:11px;
-}
-
-/* FEEDBACK */
-
-.toast {
-  position:fixed;
-  left:50%;
-  bottom:18px;
-  transform:translateX(-50%) translateY(24px);
-  opacity:0;
-  background:#eee6cf;
-  color:#222;
-  padding:10px 14px;
-  border-radius:5px;
-  transition:.2s;
-  z-index:20;
-  box-shadow:0 8px 30px #0006;
-  max-width:85vw;
-  text-align:center;
-  font-size:12px;
-}
-
-.toast.show {
-  opacity:1;
-  transform:translateX(-50%) translateY(0);
-}
-
-/* SUMMARY */
-
-.summary {
-  display:none;
-  max-width:760px;
-  margin:28px auto;
-  background:#e5dec8;
-  color:#232620;
-  padding:28px;
-  border-radius:8px;
-}
-
-.summary.show {
-  display:block;
-}
-
-.summary h2 {
-  font-size:25px;
-  margin:0;
-}
-
-.grade {
-  font-size:38px;
-  font-weight:900;
-  margin:18px 0;
-}
-
-.summary li {
-  margin:7px 0;
-}
-
-.summary .restart {
-  max-width:260px;
-  background:#25312b;
-}
-
-.footer {
-  text-align:center;
-  color:#7c8b80;
-  font-size:10px;
-  margin-top:12px;
-}
-
-@keyframes arrive {
-  from {
-    transform:translateY(-55px) scale(.96);
-    opacity:0;
-  }
-}
-
-@keyframes wiggle {
-  50% {
-    transform:translateX(2px) rotate(.4deg);
-  }
-}
-
-@keyframes shine {
-  from { transform:translateX(-45%); }
-  to { transform:translateX(45%); }
-}
-
-@keyframes mark {
-  0% {
-    opacity:0;
-    transform:translate(-50%,-50%) rotate(-9deg) scale(2.6);
-  }
-
-  22% {
-    opacity:.9;
-    transform:translate(-50%,-50%) rotate(-9deg) scale(1);
-  }
-
-  100% {
-    opacity:0;
-  }
-}
-
-@media(max-width:900px) {
-  .grid {
-    grid-template-columns:1fr;
-  }
-
-  .meta {
-    text-align:left;
-  }
-
-  .top {
-    flex-direction:column;
-  }
-
-  .stamps {
-    grid-template-columns:1fr;
-  }
-}
+@keyframes arrive{from{transform:translateY(-60px) scale(.96);opacity:0}}
+@keyframes wiggle{50%{transform:translateX(3px) rotate(.5deg)}}
+@keyframes poke{50%{transform:scale(.97) translateY(3px)}}
+@keyframes shine{from{transform:translateX(-42%)}to{transform:translateX(42%)}}
+@keyframes paw{0%{transform:translateY(45px) rotate(-20deg);opacity:0}50%{transform:translateY(0) rotate(-20deg);opacity:1}100%{transform:translateY(18px) rotate(-20deg);opacity:.9}}
+@keyframes rattle{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes mark{0%{opacity:0;transform:translate(-50%,-50%) rotate(-9deg) scale(2.7)}22%{opacity:.92;transform:translate(-50%,-50%) rotate(-9deg) scale(1)}100%{opacity:0}}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.top{flex-direction:column}.meta{text-align:left}.stamps{grid-template-columns:1fr}.window{opacity:.6}}
 </style>
 </head>
-
 <body>
-
 <div class="wrap">
-
   <div class="light"></div>
 
   <div class="top">
     <div>
-      <div class="kicker">
-        NIGHT PARCEL OFFICE · LOWER SORTING
-      </div>
-
+      <div class="kicker">NIGHT PARCEL OFFICE · LOWER SORTING</div>
       <h1>FINAL DESK — SHIFT 04</h1>
     </div>
-
     <div class="meta">
       PARCEL <b id="count">1 / 6</b><br>
       INCIDENTS <b id="incidents">0</b><br>
@@ -606,882 +138,369 @@ body {
   </div>
 
   <div class="grid" id="game">
-
     <aside class="panel">
-
       <h2>SHIFT REGULATIONS</h2>
-
       <div class="rules" id="rules"></div>
-
-      <div class="notice">
-        Read the bold line. The smaller text is just management
-        attempting to sound employed.
-      </div>
-
+      <div class="notice">Three rules. Big line wins. Management has removed the explanatory appendix after complaints that it explained things.</div>
     </aside>
 
     <section class="desk">
-
       <div class="belt"></div>
-
-      <div class="progress">
-        <span id="bar"></span>
-      </div>
+      <div class="window" id="window"></div>
+      <div class="progress"><span id="bar"></span></div>
 
       <div class="stage">
-
+        <div class="speech" id="speech"></div>
         <div class="parcel arrive" id="parcel">
-
           <div class="tape"></div>
-
           <div class="label" id="label"></div>
-
           <div class="oddity" id="oddity"></div>
-
-          <div class="eyes">
-            <span></span>
-            <span></span>
-          </div>
-
+          <div class="back-label" id="backLabel"></div>
+          <div class="eyes"><span></span><span></span></div>
+          <div class="paw">🐾</div>
           <div class="stamp-mark" id="stampMark"></div>
-
         </div>
-
       </div>
 
       <div class="stamps">
-        <button class="stamp deliver" data-action="DELIVER">
-          DELIVER
-        </button>
-
-        <button class="stamp return" data-action="RETURN">
-          RETURN
-        </button>
-
-        <button class="stamp quarantine" data-action="QUARANTINE">
-          QUARANTINE
-        </button>
+        <button class="stamp deliver" data-action="DELIVER">DELIVER</button>
+        <button class="stamp return" data-action="RETURN">RETURN</button>
+        <button class="stamp quarantine" data-action="QUARANTINE">QUARANTINE</button>
       </div>
 
+      <div class="prop mug"></div>
+      <div class="prop badge"><b>T. R.</b>FINAL DESK</div>
+      <div class="prop biscuit"></div>
     </section>
 
     <aside class="panel">
-
       <h2>INSPECTION</h2>
-
       <div class="tool-list">
-
         <button data-tool="weigh">⚖ WEIGH</button>
         <button data-tool="listen">◖ LISTEN</button>
-        <button data-tool="flip">↻ FLIP / CHECK SIDES</button>
+        <button data-tool="flip">↻ FLIP PARCEL</button>
         <button data-tool="directory">▤ DIRECTORY</button>
         <button data-tool="poke">☝ POKE PARCEL</button>
-
       </div>
 
-      <div class="result" id="result">
-        Pick a tool only if you need it.
+      <div class="result" id="result">Pick a tool only if you need it.</div>
+
+      <h2 style="margin-top:18px">QUARANTINE CAGE</h2>
+      <div class="cage" id="cage">
+        <div class="cage-eyes" id="cageEyes"><span></span><span></span></div>
       </div>
-
-      <h2 style="margin-top:18px">
-        QUARANTINE CAGE
-      </h2>
-
-      <div class="cage"></div>
-
       <div id="complaints"></div>
-
     </aside>
-
   </div>
 
   <section class="summary" id="summary"></section>
-
-  <div class="footer">
-    Prototype v2 · 6 parcels · no install or internet required
-  </div>
-
+  <div class="footer">Prototype v3 · 6 parcels · more cardboard, less paperwork</div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-
 const rulesBase = [
-
-  {
-    c:'heavy',
-    t:'HEAVY',
-    f:'> 8 kg + no PRIORITY → RETURN',
-    s:'Too heavy for Standard handling.'
-  },
-
-  {
-    c:'live',
-    t:'LIVE',
-    f:'No L-17 → QUARANTINE',
-    s:'Living things need the form.'
-  },
-
-  {
-    c:'dead',
-    t:'DECEASED',
-    f:'Recipient confirmed dead → RETURN',
-    s:'Do not improvise an afterlife route.'
-  },
-
-  {
-    c:'mirror',
-    t:'SECTOR 7 MIRRORS',
-    f:'Reflective + Sector 7 → QUARANTINE',
-    s:'This rule exists for a reason.'
-  }
-
+  {c:'heavy',t:'HEAVY',f:'> 8 kg + no PRIORITY → RETURN'},
+  {c:'live',t:'LIVE',f:'No L-17 → QUARANTINE'},
+  {c:'mirror',t:'SECTOR 7 MIRROR',f:'Reflective + Sector 7 → QUARANTINE'}
 ];
 
 const parcels = [
-
   {
-    id:'01',
-    sender:'B. Price',
-    recipient:'M. Holt',
-    dest:'17 Alder Road',
-    weight:'11.2 kg',
-    post:'Night Standard',
-    marks:['FRAGILE'],
-    odd:'A reassuringly normal box.',
-    correct:'RETURN',
-    cls:'',
-
+    id:'01', sender:'B. Price', recipient:'M. Holt', dest:'17 Alder Road',
+    weight:'11.2 kg', post:'Night Standard', marks:['FRAGILE'], cls:'dented',
+    odd:'Normal box. Suspiciously normal.', correct:'RETURN',
+    back:'BACK: No PRIORITY handling label.',
     inspect:{
-      weigh:'11.2 kg. Definitely heavy.',
-      listen:'Silence. Blessed, ordinary silence.',
-      flip:'No PRIORITY mark anywhere.',
-      directory:'M. Holt — alive, annoyed, available.',
-      poke:'It behaves like cardboard. Suspiciously professional.'
+      weigh:'11.2 kg. Heavy enough to require PRIORITY.',
+      listen:'Nothing. Beautiful.',
+      directory:'M. Holt — alive, impatient.',
+      poke:'Cardboard. No retaliation.'
     }
   },
-
   {
-    id:'02',
-    sender:'Bell Family',
-    recipient:'R. Bell',
-    dest:'6 Orchard Row',
-    weight:'1.1 kg',
-    post:'Night Standard',
-    marks:['FORM L-17','LIVE'],
-    odd:'The box sneezes.',
-    correct:'DELIVER',
-    cls:'wiggle has-eyes',
-
+    id:'02', sender:'Bell Family', recipient:'R. Bell', dest:'6 Orchard Row',
+    weight:'1.1 kg', post:'Night Standard', marks:['FORM L-17','LIVE'], cls:'wiggle has-eyes',
+    odd:'The box sneezes.', correct:'DELIVER',
+    back:'FORM L-17 — Name: MR NIBBLES. Species: “Mostly.”',
     inspect:{
-      weigh:'1.1 kg. The scale squeaks. So does the parcel.',
-      listen:'Tiny claws. Tiny offended noise.',
-      flip:'L-17 attached. Name: MR NIBBLES.',
+      weigh:'1.1 kg. It hops off the scale.',
+      listen:'Tiny claws. Then: “mrrp.”',
       directory:'R. Bell — registered owner of Mr Nibbles.',
-      poke:'Something inside pokes you back.'
+      poke:'Something pokes you back.'
     },
-
-    choice:(action,state) => {
-
-      if(action === 'QUARANTINE') {
-
-        state.nibbles = true;
-
-        state.inc.push(
-          'Mr Nibbles detained despite valid paperwork.'
-        );
-
+    choice(action,state){
+      if(action==='QUARANTINE'){
+        state.nibbles=true;
+        state.inc.push('Mr Nibbles detained despite valid paperwork.');
       }
-
     }
   },
-
   {
-    id:'03',
-    sender:'Sector 7 Antiques',
-    recipient:'L. Marsh',
-    dest:'22 Grafton Lane',
-    weight:'3.0 kg',
-    post:'Priority',
-    marks:['SECTOR 7','REFLECTIVE'],
-    odd:'The cardboard reflects your face. Badly.',
-    correct:'QUARANTINE',
-    cls:'shiny',
-
+    id:'03', sender:'Sector 7 Antiques', recipient:'L. Marsh', dest:'22 Grafton Lane',
+    weight:'3.0 kg', post:'Priority', marks:['SECTOR 7','REFLECTIVE'], cls:'shiny',
+    odd:'The cardboard reflects your face. Poorly.', correct:'QUARANTINE',
+    back:'CONTENTS: ONE HAND MIRROR. “Probably harmless.” — vendor',
     inspect:{
       weigh:'3.0 kg.',
-      listen:'The room hum repeats one second late.',
-      flip:'CONTENTS: HAND MIRROR. Definitely Sector 7.',
-      directory:'L. Marsh — alive. Reflection status unknown.',
+      listen:'The fluorescent hum repeats one second late.',
+      directory:'L. Marsh — alive. Reflection status unavailable.',
       poke:'Your finger touches itself from the other side.'
     },
-
-    choice:(action,state) => {
-
-      if(action === 'DELIVER') {
-
-        state.mirror = true;
-
-        state.inc.push(
-          'Sector 7 mirror released into network.'
-        );
-
+    choice(action,state){
+      if(action==='DELIVER'){
+        state.mirror=true;
+        state.inc.push('Sector 7 mirror released into network.');
       }
-
     }
   },
-
   {
-    id:'04',
-    sender:'Customer Relations',
-    recipient:'FINAL DESK',
-    dest:'THIS DESK',
-    weight:'0.1 kg',
-    post:'Internal',
-    marks:['COMPLAINT'],
-    odd:'',
-    correct:'DELIVER',
-    cls:'',
-
-    onShow:(state,p) => {
-
-      if(state.nibbles) {
-
-        p.odd =
-          'NOTE: “WHERE IS MR NIBBLES? He has his medication at 3.”';
-
-        if(!state.complaintAdded) {
-
-          state.complaintAdded = true;
-
-          state.complaints.push(
-            'WHERE IS MR NIBBLES?'
-          );
-
+    id:'04', sender:'Customer Relations', recipient:'FINAL DESK', dest:'THIS DESK',
+    weight:'0.1 kg', post:'Internal', marks:['COMPLAINT'], cls:'',
+    odd:'', correct:'DELIVER', back:'Marked URGENT-ISH.',
+    onShow(state,p){
+      if(state.nibbles){
+        p.odd='“WHERE IS MR NIBBLES? He has his medication at 3.”';
+        if(!state.complaintAdded){
+          state.complaintAdded=true;
+          state.complaints.push('WHERE IS MR NIBBLES?');
         }
-
-      } else {
-
-        p.odd =
-          'NOTE: “Thanks for not quarantining Mr Nibbles again. He gets dramatic.”';
-
+      }else{
+        p.odd='“Thanks for not quarantining Mr Nibbles again.”';
       }
-
     },
-
     inspect:{
       weigh:'0.1 kg of administrative disappointment.',
-      listen:'Someone sighs from inside the envelope.',
-      flip:'Marked URGENT-ISH.',
+      listen:'A long sigh from inside the envelope.',
       directory:'Recipient found. Unfortunately.',
-      poke:'The complaint crumples itself in protest.'
+      poke:'The complaint crumples itself.'
     }
   },
-
   {
-    id:'05',
-    sender:'Edith Vale',
-    recipient:'Arthur Vale',
-    dest:'16 Willow Lane',
-    weight:'0.8 kg',
-    post:'Night Standard',
-    marks:['PERSONAL'],
-    odd:'Old birthday paper. “For Arthur.”',
-    correct:'RETURN',
-    cls:'',
-
+    id:'05', sender:'Edith Vale', recipient:'Arthur Vale', dest:'16 Willow Lane',
+    weight:'0.8 kg', post:'Night Standard', marks:['PERSONAL'], cls:'frost',
+    odd:'Old birthday paper. “For Arthur.”', correct:'RETURN',
+    back:'NOTE: “Still warm, if they hurry.”',
     inspect:{
       weigh:'0.8 kg.',
       listen:'Nothing. Then a faint pen scratch.',
-      flip:'Note: “Still warm, if they hurry.”',
       directory:'Arthur Vale — deceased, 14 years.',
-      poke:'The parcel is warm.'
+      poke:'The parcel is warm. The desk around it is cold.'
     },
-
-    choice:(action,state) => {
-      state.edith = action;
-    }
+    choice(action,state){ state.edith=action; }
   },
-
   {
-    id:'06',
-    sender:'NIGHT PARCEL OFFICE — TOMORROW',
-    recipient:'YOU',
-    dest:'BEHIND YOU',
-    weight:'?',
-    post:'NONE',
-    marks:['DO NOT RETURN'],
-    odd:'The label is stuck directly to the desk. Three knocks sound behind you.',
-    correct:'QUARANTINE',
-    cls:'has-eyes',
-
+    id:'06', sender:'NIGHT PARCEL OFFICE — TOMORROW', recipient:'YOU', dest:'BEHIND YOU',
+    weight:'?', post:'NONE', marks:['DO NOT RETURN'], cls:'has-eyes teeth',
+    odd:'There is no parcel. Only a label stuck to the desk.', correct:'QUARANTINE',
+    back:'BACK: There is no underside.',
     inspect:{
-      weigh:'0.0 kg. Then the scale shows your birthday.',
+      weigh:'0.0 kg. Then the scale displays your birthday.',
       listen:'Your own voice: “Don’t turn around.”',
-      flip:'There is no underside.',
       directory:'Recipient: PRESENT. Destination: PRESENT.',
       poke:'The desk pokes you back.'
     },
-
-    choice:(action,state) => {
-
-      state.final = action;
-
-      state.inc.push(
-        'One impossible address formally acknowledged.'
-      );
-
+    choice(action,state){
+      state.final=action;
+      state.inc.push('One impossible address formally acknowledged.');
     }
   }
-
 ];
 
-const state = {
-
-  i:0,
-  lock:false,
-
-  processed:0,
-
-  deliver:0,
-  return:0,
-  quarantine:0,
-
-  errors:0,
-
-  nibbles:false,
-  mirror:false,
-
-  edith:null,
-  final:null,
-
-  complaints:[],
-  complaintAdded:false,
-
-  inc:[]
-
+const state={
+  i:0,lock:false,processed:0,deliver:0,return:0,quarantine:0,errors:0,
+  nibbles:false,mirror:false,edith:null,final:null,complaints:[],complaintAdded:false,inc:[]
 };
 
-const $ = selector =>
-  document.querySelector(selector);
+const $=s=>document.querySelector(s);
+const parcel=$('#parcel'),label=$('#label'),odd=$('#oddity'),backLabel=$('#backLabel');
+const result=$('#result'),toast=$('#toast'),speech=$('#speech');
 
-const parcel = $('#parcel');
-const label = $('#label');
-const odd = $('#oddity');
-const result = $('#result');
-const toast = $('#toast');
+function current(){return parcels[state.i]}
 
-function current() {
-
-  return parcels[state.i];
-
+function renderRules(){
+  $('#rules').innerHTML=rulesBase.map(r=>`
+    <div class="rule ${r.c}">
+      <b>${r.t}</b>
+      <div class="formula">${r.f}</div>
+    </div>`).join('') +
+    (state.i===5 ? `
+      <div class="rule amend">
+        <b>HANDWRITTEN AMENDMENT</b>
+        <div class="formula">Do <em>NOT</em> look behind you.</div>
+      </div>` : '');
 }
 
-function renderRules() {
-
-  $('#rules').innerHTML =
-    rulesBase.map(rule => `
-
-      <div class="rule ${rule.c}">
-
-        <b>${rule.t}</b>
-
-        <div class="formula">
-          ${rule.f}
-        </div>
-
-        <small>
-          ${rule.s}
-        </small>
-
-      </div>
-
-    `).join('')
-
-    +
-
-    (
-
-      state.i === 5
-
-      ? `
-
-        <div class="rule corrupt">
-
-          <b>AMENDMENT 04-B</b>
-
-          <div class="formula">
-            Do <em>NOT</em> trust handwritten amendments.
-          </div>
-
-          <small>
-            Source: Future Dispatch.
-          </small>
-
-        </div>
-
-      `
-
-      : ''
-
-    );
-
+function reverseText(t){
+  return state.mirror && state.i>=3 ? t.split('').reverse().join('') : t;
 }
 
-function reverseText(text) {
-
-  if(state.mirror && state.i >= 3) {
-
-    return text
-      .split('')
-      .reverse()
-      .join('');
-
-  }
-
-  return text;
-
-}
-
-function showParcel() {
-
-  if(state.i >= parcels.length) {
-
-    endShift();
-    return;
-
-  }
-
-  const p = current();
-
-  if(p.onShow) {
-
-    p.onShow(state,p);
-
-  }
+function showParcel(){
+  if(state.i>=parcels.length){endShift();return}
+  const p=current();
+  if(p.onShow)p.onShow(state,p);
 
   renderRules();
+  $('#count').textContent=`${state.i+1} / ${parcels.length}`;
+  $('#bar').style.width=`${state.i/parcels.length*100}%`;
+  $('#incidents').textContent=state.inc.length;
+  result.innerHTML='Pick a tool only if you need it.';
+  parcel.className='parcel arrive '+(p.cls||'');
+  parcel.classList.remove('flipped','show-paw','poked','route-deliver','route-return','route-quarantine');
 
-  $('#count').textContent =
-    `${state.i + 1} / ${parcels.length}`;
-
-  $('#bar').style.width =
-    `${state.i / parcels.length * 100}%`;
-
-  $('#incidents').textContent =
-    state.inc.length;
-
-  result.innerHTML =
-    'Pick a tool only if you need it.';
-
-  parcel.className =
-    'parcel arrive ' + (p.cls || '');
-
-  label.innerHTML = `
-
-    <div style="
-      font-size:9px;
-      letter-spacing:.14em;
-      color:#70766e
-    ">
-      FINAL ROUTING LABEL · ${p.id}
-    </div>
-
-    <div class="dest">
-      ${reverseText(p.dest)}
-    </div>
-
+  label.innerHTML=`
+    <div style="font-size:9px;letter-spacing:.14em;color:#70766e">FINAL ROUTING LABEL · ${p.id}</div>
+    <div class="dest">${reverseText(p.dest)}</div>
     <div class="label-grid">
-
-      <div class="f">
-        <b>FROM</b>
-        ${p.sender}
-      </div>
-
-      <div class="f">
-        <b>TO</b>
-        ${p.recipient}
-      </div>
-
-      <div class="f">
-        <b>WEIGHT</b>
-        ${p.weight}
-      </div>
-
-      <div class="f">
-        <b>POSTAGE</b>
-        ${p.post}
-      </div>
-
+      <div class="f"><b>FROM</b>${p.sender}</div>
+      <div class="f"><b>TO</b>${p.recipient}</div>
+      <div class="f"><b>WEIGHT</b>${p.weight}</div>
+      <div class="f"><b>POSTAGE</b>${p.post}</div>
     </div>
+    <div class="marks">${p.marks.map(m=>`<span class="mark">${m}</span>`).join('')}</div>`;
 
-    <div class="marks">
+  odd.textContent=reverseText(p.odd||'');
+  backLabel.textContent=p.back||'BACK: Nothing useful.';
 
-      ${p.marks.map(mark =>
-        `<span class="mark">${mark}</span>`
-      ).join('')}
+  $('#complaints').innerHTML=state.complaints.slice(-2).map(c=>`<div class="complaint">${c}</div>`).join('');
 
-    </div>
+  $('#window').classList.toggle('silhouette',state.i===5);
 
-  `;
-
-  odd.textContent =
-    reverseText(p.odd || '');
-
-  $('#complaints').innerHTML =
-    state.complaints
-      .slice(-2)
-      .map(text =>
-        `<div class="complaint">${text}</div>`
-      )
-      .join('');
-
-  if(state.mirror && state.i === 3) {
-
-    say(
-      'The address printer is now printing backwards. Management blames humidity.'
-    );
-
+  if(state.mirror && state.i===3){
+    say('ADDRESS PRINTER FAULT. Management has blamed humidity.');
   }
-
 }
 
-function say(text) {
-
-  toast.textContent = text;
-
+function say(t){
+  toast.textContent=t;
   toast.classList.add('show');
-
   clearTimeout(say.timer);
-
-  say.timer = setTimeout(() => {
-
-    toast.classList.remove('show');
-
-  },2200);
-
+  say.timer=setTimeout(()=>toast.classList.remove('show'),2200);
 }
 
-function noise(kind) {
-
-  try {
-
-    const audio =
-      noise.audio ||
-      (noise.audio =
-        new (
-          window.AudioContext ||
-          window.webkitAudioContext
-        )()
-      );
-
-    const oscillator =
-      audio.createOscillator();
-
-    const gain =
-      audio.createGain();
-
-    const now =
-      audio.currentTime;
-
-    oscillator.connect(gain);
-    gain.connect(audio.destination);
-
-    oscillator.frequency.value =
-      kind === 'stamp'
-        ? 70
-        : kind === 'knock'
-        ? 120
-        : 420;
-
-    oscillator.type =
-      kind === 'stamp'
-        ? 'square'
-        : 'sine';
-
-    gain.gain.setValueAtTime(
-      kind === 'stamp'
-        ? .16
-        : .05,
-      now
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      .001,
-      now + .12
-    );
-
-    oscillator.start();
-
-    oscillator.stop(
-      now + .14
-    );
-
-  } catch(error) {}
-
+function bubble(t){
+  speech.textContent=t;
+  speech.classList.add('show');
+  clearTimeout(bubble.timer);
+  bubble.timer=setTimeout(()=>speech.classList.remove('show'),1800);
 }
 
-document
-  .querySelectorAll('[data-tool]')
-  .forEach(button => {
+function noise(kind){
+  try{
+    const ac=noise.ac||(noise.ac=new (window.AudioContext||window.webkitAudioContext)());
+    const o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;
+    o.connect(g);g.connect(ac.destination);
+    o.type=kind==='stamp'?'square':'sine';
+    o.frequency.value=kind==='stamp'?72:kind==='knock'?115:kind==='listen'?320:430;
+    g.gain.setValueAtTime(kind==='stamp'?.18:.055,n);
+    g.gain.exponentialRampToValueAtTime(.001,n+.13);
+    o.start();o.stop(n+.15);
+  }catch(e){}
+}
 
-    button.addEventListener(
-      'click',
-      () => {
+document.querySelectorAll('[data-tool]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const p=current(),tool=btn.dataset.tool;
+    noise(tool==='listen'?'listen':'tool');
 
-        const p =
-          current();
+    if(tool==='flip'){
+      parcel.classList.toggle('flipped');
+      result.innerHTML=`<strong>FLIPPED</strong>${parcel.classList.contains('flipped')?p.back:'Front side restored.'}`;
+      return;
+    }
 
-        const key =
-          button.dataset.tool;
+    result.innerHTML=`<strong>${btn.textContent.replace(/^[^A-Z]+/,'')}</strong>${p.inspect[tool]||'Nothing useful.'}`;
 
-        noise('tool');
-
-        result.innerHTML = `
-
-          <strong>
-            ${button.textContent.replace(/^[^A-Z]+/,'')}
-          </strong>
-
-          ${p.inspect[key] || 'Nothing useful.'}
-
-        `;
-
-        if(key === 'poke') {
-
-          parcel.classList.remove('wiggle');
-
-          void parcel.offsetWidth;
-
-          parcel.classList.add('wiggle');
-
-        }
-
-        if(state.i === 5 && key === 'listen') {
-
-          noise('knock');
-
-        }
-
+    if(tool==='poke'){
+      parcel.classList.remove('poked');void parcel.offsetWidth;parcel.classList.add('poked');
+      if(state.i===1){
+        parcel.classList.add('show-paw');
+        bubble('OW.');
+      }else if(state.i===5){
+        bubble('That was rude.');
       }
-    );
+    }
 
+    if(tool==='listen'){
+      if(state.i===1)bubble('mrrp.');
+      if(state.i===2)bubble('...hello?');
+      if(state.i===5){bubble('DON’T TURN AROUND.');noise('knock')}
+    }
   });
+});
 
-document
-  .querySelectorAll('.stamp')
-  .forEach(button => {
+document.querySelectorAll('.stamp').forEach(btn=>{
+  btn.addEventListener('click',()=>choose(btn.dataset.action));
+});
 
-    button.addEventListener(
-      'click',
-      () => choose(
-        button.dataset.action
-      )
-    );
-
-  });
-
-function choose(action) {
-
-  if(state.lock) return;
-
-  state.lock = true;
-
-  const p =
-    current();
-
+function choose(action){
+  if(state.lock)return;
+  state.lock=true;
+  const p=current();
   noise('stamp');
 
   state.processed++;
+  state[action.toLowerCase()]++;
+  if(action!==p.correct)state.errors++;
+  if(p.choice)p.choice(action,state);
 
-  state[
-    action.toLowerCase()
-  ]++;
+  const mark=$('#stampMark');
+  mark.textContent=action;
+  mark.style.color=action==='DELIVER'?'#78b987':action==='RETURN'?'#d5a04a':'#d56b63';
+  mark.classList.remove('show');void mark.offsetWidth;mark.classList.add('show');
 
-  if(action !== p.correct) {
-
-    state.errors++;
-
+  if(action==='QUARANTINE'){
+    const cage=$('#cage');
+    cage.classList.remove('rattle');void cage.offsetWidth;cage.classList.add('rattle');
+    if(state.i===1)$('#cageEyes').classList.add('show');
   }
 
-  if(p.choice) {
+  say(action===p.correct?'Routing accepted.':'Routing recorded. Compliance has declined to comment.');
 
-    p.choice(
-      action,
-      state
-    );
-
-  }
-
-  const mark =
-    $('#stampMark');
-
-  mark.textContent =
-    action;
-
-  mark.style.color =
-    action === 'DELIVER'
-      ? '#78b987'
-      : action === 'RETURN'
-      ? '#d4a456'
-      : '#d56a62';
-
-  mark.classList.remove(
-    'show'
-  );
-
-  void mark.offsetWidth;
-
-  mark.classList.add(
-    'show'
-  );
-
-  say(
-    action === p.correct
-
-      ? 'Routing accepted.'
-
-      : 'Routing recorded. Compliance has chosen not to comment.'
-  );
-
-  setTimeout(() => {
-
-    parcel.classList.add(
-      'leave'
-    );
-
-    setTimeout(() => {
-
+  setTimeout(()=>{
+    parcel.classList.add('route-'+action.toLowerCase());
+    setTimeout(()=>{
       state.i++;
-
-      state.lock = false;
-
+      state.lock=false;
       showParcel();
-
-    },250);
-
-  },480);
-
+    },420);
+  },460);
 }
 
-function endShift() {
+function endShift(){
+  $('#game').style.display='none';
+  const grade=state.errors<=1?'ADEQUATE':state.errors<=3?'CONDITIONALLY ADEQUATE':'TECHNICALLY PRESENT';
+  const incidents=[...state.inc];
 
-  $('#game').style.display =
-    'none';
+  if(state.mirror)incidents.push('Several addresses printed backwards.');
+  if(state.edith==='DELIVER')incidents.push('Mail delivered to a deceased recipient; receipt pending.');
+  if(!incidents.length)incidents.push('No incidents recognised by management.');
 
-  const grade =
-    state.errors <= 1
+  const hook=state.edith==='DELIVER'
+    ? 'At 02:31 a receipt arrives from Arthur Vale.'
+    : 'At 02:31 three knocks sound from behind the frosted window.';
 
-      ? 'ADEQUATE'
-
-      : state.errors <= 3
-
-      ? 'CONDITIONALLY ADEQUATE'
-
-      : 'TECHNICALLY PRESENT';
-
-  const incidents =
-    [...state.inc];
-
-  if(state.mirror) {
-
-    incidents.push(
-      'Several addresses printed backwards.'
-    );
-
-  }
-
-  if(state.edith === 'DELIVER') {
-
-    incidents.push(
-      'Mail delivered to a deceased recipient; delivery receipt pending.'
-    );
-
-  }
-
-  if(!incidents.length) {
-
-    incidents.push(
-      'No incidents recognised by management.'
-    );
-
-  }
-
-  const hook =
-    state.edith === 'DELIVER'
-
-      ? 'At 02:31 a receipt arrives from Arthur Vale.'
-
-      : 'At 02:31 three knocks sound from behind the frosted window.';
-
-  $('#summary').innerHTML = `
-
-    <h2>
-      SHIFT ASSESSMENT
-    </h2>
-
-    <div class="grade">
-      ${grade}
-    </div>
-
-    <p>
-      Processed <b>${state.processed}</b>
-      · Delivered <b>${state.deliver}</b>
-      · Returned <b>${state.return}</b>
-      · Quarantined <b>${state.quarantine}</b>
-    </p>
-
-    <h3>
-      INCIDENTS
-    </h3>
-
-    <ul>
-      ${incidents.map(
-        text =>
-          `<li>${text}</li>`
-      ).join('')}
-    </ul>
-
-    <p>
-      <b>${hook}</b>
-    </p>
-
-    <p>
-      Management has elected not to investigate further.
-    </p>
-
-    <button
-      class="restart"
-      onclick="location.reload()"
-    >
-      ANOTHER SHIFT
-    </button>
-
-  `;
-
-  $('#summary').classList.add(
-    'show'
-  );
-
+  $('#summary').innerHTML=`
+    <h2>SHIFT ASSESSMENT</h2>
+    <div class="grade">${grade}</div>
+    <p>Processed <b>${state.processed}</b> · Delivered <b>${state.deliver}</b> · Returned <b>${state.return}</b> · Quarantined <b>${state.quarantine}</b></p>
+    <h3>INCIDENTS</h3>
+    <ul>${incidents.map(i=>`<li>${i}</li>`).join('')}</ul>
+    <p><b>${hook}</b></p>
+    <p>Management has elected not to investigate further.</p>
+    <button class="restart" id="restart">ANOTHER SHIFT</button>`;
+  $('#summary').classList.add('show');
+  $('#restart').addEventListener('click',()=>location.reload());
 }
 
-let minute =
-  13;
-
-setInterval(() => {
-
+let minute=13;
+setInterval(()=>{
   minute++;
-
-  $('#clock').textContent =
-    `02:${String(minute).padStart(2,'0')}`;
-
+  $('#clock').textContent=`02:${String(minute).padStart(2,'0')}`;
 },20000);
 
 renderRules();
 showParcel();
-
 </script>
-
 </body>
 </html>
