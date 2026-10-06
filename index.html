@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Night Parcel Office — Prototype v3</title>
+<title>Night Parcel Office — Prototype v5</title>
 <style>
 :root{
   --bg:#101612;--panel:#19231e;--panel2:#202d26;--line:#46554b;
@@ -22,6 +22,21 @@ body{
 .kicker{font-size:11px;letter-spacing:.18em;color:#9db0a3}
 .top h1{margin:5px 0;font-size:clamp(22px,3vw,34px)}
 .meta{text-align:right;color:#aeb8b0;font-size:12px;line-height:1.5}
+.audio-toggle{margin-top:6px;border:1px solid #53645a;background:#1d2822;color:#dce7df;padding:6px 9px;border-radius:4px;font:inherit;font-size:10px;cursor:pointer;letter-spacing:.06em}
+.audio-toggle:hover{background:#28352e}.audio-toggle.on{border-color:#799985;color:#e9f5ec}
+.header-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;margin-top:6px}
+.help-toggle{
+  border:1px solid #53645a;background:#1d2822;color:#dce7df;padding:6px 9px;border-radius:4px;
+  font:inherit;font-size:10px;cursor:pointer;letter-spacing:.06em
+}
+.help-toggle:hover{background:#28352e}
+
+.tutorial-banner{
+  display:none;margin:0 0 10px;padding:9px 11px;border-radius:5px;border:1px solid #8d7544;
+  background:#332a1b;color:#f1dfb5;font-size:11px;line-height:1.45
+}
+.tutorial-banner.show{display:block}
+.feedback-strip{display:none;margin:0 0 10px;padding:8px 10px;border-radius:5px;font-size:11px;background:#202a25;border:1px solid #4f5e55;color:#dfe8e1}.feedback-strip.show{display:block}.feedback-strip.good{border-color:#668d71;background:#1e2f24}.feedback-strip.bad{border-color:#8d665f;background:#32231f}
 .grid{display:grid;grid-template-columns:285px minmax(0,1fr) 250px;gap:15px}
 .panel{background:linear-gradient(#1c2821,#17211c);border:1px solid var(--line);border-radius:10px;padding:14px}
 .panel h2{font-size:12px;letter-spacing:.15em;margin:0 0 12px}
@@ -30,6 +45,9 @@ body{
 .rule b{display:block;font-size:11px;letter-spacing:.08em;margin-bottom:4px}
 .rule .formula{font-size:15px;font-weight:900;line-height:1.25}
 .rule.heavy{border-color:var(--amber)} .rule.live{border-color:var(--green)} .rule.mirror{border-color:var(--red)}
+.rule.dead{border-color:#9d9187}.rule.route{border-color:#9f91c6}
+.rule.new-rule{animation:newRule .55s ease both;box-shadow:0 0 0 2px #ffffff18}
+
 .rule.amend{border-color:#9f91c6;transform:rotate(-.4deg)}
 .rule.amend em{text-decoration:line-through 3px #8d3030;font-style:normal}
 .notice{margin-top:11px;font-size:11px;line-height:1.45;color:#9dac9f}
@@ -67,6 +85,14 @@ body{
 .label{position:relative;z-index:3;background:#f0ead8;color:#22261f;padding:14px;border:1px solid #c7bea7;border-radius:3px;transform:rotate(-.6deg);box-shadow:0 2px 4px #0002}
 .dest{font-size:23px;font-weight:900;line-height:1.04;margin:7px 0 9px}
 .label-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}.f{font-size:12px}.f b{display:block;font-size:9px;letter-spacing:.1em;color:#71776f}
+.facts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.fact{
+  border:1px solid #8a877b;background:#ddd6c0;padding:5px 7px;font-size:10px;line-height:1.25
+}
+.fact b{display:block;font-size:8px;letter-spacing:.08em;color:#686d67;margin-bottom:1px}
+.fact.tutorial-focus{outline:3px solid #c8a75b;outline-offset:2px}
+.rule.tutorial-focus{outline:3px solid #c8a75b;outline-offset:2px}
+
 .marks{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}.mark{font-size:9px;padding:4px 6px;border:1px solid #767a70;background:#ddd6c0}
 .oddity{position:relative;z-index:3;margin-top:13px;background:#6b4b34;border:1px dashed #e7bf8d;color:#f7e4ca;padding:9px 10px;border-radius:4px;font-size:13px}
 .back-label{display:none;position:relative;z-index:3;margin-top:12px;background:#d7ccb2;color:#2b2c25;border:2px dashed #7d7461;padding:12px;transform:rotate(.8deg);font-size:13px}
@@ -108,7 +134,28 @@ body{
 .biscuit{right:32px;bottom:28px;width:48px;height:37px;background:#b88952;border-radius:52% 48% 47% 53%;transform:rotate(14deg);box-shadow:inset 7px 2px #8c653f55}.biscuit:after{content:"•  •  •";position:absolute;color:#65462d;left:8px;top:8px;font-size:12px}
 
 .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(24px);opacity:0;background:#eee7d0;color:#222;padding:10px 14px;border-radius:5px;box-shadow:0 8px 30px #0006;transition:.2s;z-index:30;max-width:86vw;text-align:center;font-size:12px}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.summary{display:none;max-width:760px;margin:28px auto;background:#e5dec8;color:#232620;padding:28px;border-radius:8px}.summary.show{display:block}.summary h2{font-size:25px;margin:0}.grade{font-size:38px;font-weight:900;margin:18px 0}.summary li{margin:7px 0}.restart{background:#25312b;color:#eef4ef;border:1px solid #5e7166;padding:12px;max-width:260px}
+.summary{display:none;max-width:920px;margin:28px auto;background:#e5dec8;color:#232620;padding:28px;border-radius:8px}.summary.show{display:block}.summary h2{font-size:25px;margin:0}.results-hero{display:grid;grid-template-columns:170px 1fr;gap:22px;align-items:center;margin:20px 0}.score-ring{--score:0;width:150px;height:150px;border-radius:50%;background:conic-gradient(#4f7c5c calc(var(--score)*1%),#c8c0a9 0);display:grid;place-items:center;position:relative}.score-ring:after{content:"";position:absolute;width:112px;height:112px;border-radius:50%;background:#e5dec8}.score-ring .score-value{position:relative;z-index:2;text-align:center;font-size:31px;font-weight:900;line-height:.95}.score-ring .score-value small{display:block;font-size:10px;letter-spacing:.1em;margin-top:7px;color:#696b61}.grade{font-size:34px;font-weight:900;margin:0 0 7px}.verdict{font-size:14px;line-height:1.5;max-width:600px}.result-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:15px 0}.stat{border:1px solid #a99f88;background:#d9d1ba;padding:9px;border-radius:4px;text-align:center}.stat b{display:block;font-size:19px}.stat span{font-size:9px;letter-spacing:.08em;color:#6f6e63}.review{margin:20px 0}.review h3{margin-bottom:8px}.review-row{display:grid;grid-template-columns:1.2fr .7fr .7fr 2fr;gap:8px;align-items:center;border-top:1px solid #bdb49d;padding:9px 3px;font-size:11px}.review-row.header{font-weight:900;color:#5f6259;border-top:0}.review-row .ok{color:#376847;font-weight:900}.review-row .no{color:#90493f;font-weight:900}.results-note{background:#d3cab1;border-left:5px solid #786f59;padding:10px 12px;margin:14px 0;font-size:12px;line-height:1.45}.restart{background:#25312b;color:#eef4ef;border:1px solid #5e7166;padding:12px;max-width:260px}@media(max-width:700px){.results-hero{grid-template-columns:1fr}.score-ring{margin:auto}.result-stats{grid-template-columns:1fr 1fr}.review-row{grid-template-columns:1fr 1fr}.review-row span:last-child{grid-column:1/-1}}
+.briefing-overlay{
+  position:fixed;inset:0;background:#07100bcc;z-index:100;display:none;align-items:center;justify-content:center;padding:20px
+}
+.briefing-overlay.show{display:flex}
+.briefing-card{
+  width:min(650px,96vw);background:#e9e2cc;color:#20241f;border:1px solid #8d8877;border-radius:9px;
+  box-shadow:0 22px 80px #0009;padding:24px
+}
+.briefing-card h2{font-size:24px;margin:0 0 5px}.briefing-card .sub{color:#67695f;font-size:11px;letter-spacing:.1em;margin-bottom:18px}
+.briefing-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0}
+.brief-step{background:#d7cfb8;border:1px solid #aaa18c;border-radius:5px;padding:11px}
+.brief-step b{display:block;font-size:12px;margin-bottom:5px}.brief-step span{font-size:11px;line-height:1.4}
+.verb-key{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:14px 0}
+.verb{border:2px solid #746f63;padding:9px;border-radius:4px;text-align:center;font-size:11px}
+.verb b{display:block;font-size:14px;margin-bottom:3px}.verb.deliver-key{border-color:#60906b}.verb.return-key{border-color:#b08a4e}.verb.quarantine-key{border-color:#aa5c55}
+.briefing-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}
+.briefing-footer label{font-size:11px;color:#64665e;display:flex;align-items:center;gap:6px}
+.start-shift{border:1px solid #45584d;background:#223029;color:#f0f5f1;font:inherit;font-weight:900;padding:11px 18px;border-radius:5px;cursor:pointer}
+.start-shift:hover{background:#2b3c33}
+.briefing-card .tip{border-left:5px solid #8e7441;background:#ded4ba;padding:10px 12px;font-size:11px;line-height:1.45;margin-top:13px}
+@keyframes newRule{from{transform:translateX(-12px);opacity:0}to{transform:none;opacity:1}}
 .footer{text-align:center;color:#7d8a81;font-size:10px;margin-top:12px}
 
 @keyframes arrive{from{transform:translateY(-60px) scale(.96);opacity:0}}
@@ -118,7 +165,7 @@ body{
 @keyframes paw{0%{transform:translateY(45px) rotate(-20deg);opacity:0}50%{transform:translateY(0) rotate(-20deg);opacity:1}100%{transform:translateY(18px) rotate(-20deg);opacity:.9}}
 @keyframes rattle{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 @keyframes mark{0%{opacity:0;transform:translate(-50%,-50%) rotate(-9deg) scale(2.7)}22%{opacity:.92;transform:translate(-50%,-50%) rotate(-9deg) scale(1)}100%{opacity:0}}
-@media(max-width:900px){.grid{grid-template-columns:1fr}.top{flex-direction:column}.meta{text-align:left}.stamps{grid-template-columns:1fr}.window{opacity:.6}}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.top{flex-direction:column}.meta{text-align:left}.header-actions{justify-content:flex-start}.stamps{grid-template-columns:1fr}.window{opacity:.6}.briefing-steps,.verb-key{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -134,6 +181,10 @@ body{
       PARCEL <b id="count">1 / 6</b><br>
       INCIDENTS <b id="incidents">0</b><br>
       <span id="clock">02:13</span>
+      <div class="header-actions">
+        <button class="help-toggle" id="helpToggle" type="button">? HOW TO PLAY</button>
+        <button class="audio-toggle" id="musicToggle" type="button" aria-pressed="true">♫ MUSIC: ON</button>
+      </div>
     </div>
   </div>
 
@@ -141,7 +192,7 @@ body{
     <aside class="panel">
       <h2>SHIFT REGULATIONS</h2>
       <div class="rules" id="rules"></div>
-      <div class="notice">Three rules. Big line wins. Management has removed the explanatory appendix after complaints that it explained things.</div>
+      <div class="notice">Match the parcel fields to the regulation wording exactly. New regulations may arrive during the shift.</div>
     </aside>
 
     <section class="desk">
@@ -162,6 +213,8 @@ body{
         </div>
       </div>
 
+      <div class="tutorial-banner" id="tutorialBanner">FIRST PARCEL: compare <b>WEIGHT</b> + <b>HANDLING</b> with the HEAVY rule. If no rule blocks a parcel, DELIVER it.</div>
+      <div class="feedback-strip" id="routingFeedback" aria-live="polite"></div>
       <div class="stamps">
         <button class="stamp deliver" data-action="DELIVER">DELIVER</button>
         <button class="stamp return" data-action="RETURN">RETURN</button>
@@ -176,11 +229,11 @@ body{
     <aside class="panel">
       <h2>INSPECTION</h2>
       <div class="tool-list">
-        <button data-tool="weigh">⚖ WEIGH</button>
-        <button data-tool="listen">◖ LISTEN</button>
-        <button data-tool="flip">↻ FLIP PARCEL</button>
-        <button data-tool="directory">▤ DIRECTORY</button>
-        <button data-tool="poke">☝ POKE PARCEL</button>
+        <button data-tool="weigh">⚖ CHECK WEIGHT</button>
+        <button data-tool="listen">◖ LISTEN TO BOX</button>
+        <button data-tool="flip">↻ TURN BOX OVER</button>
+        <button data-tool="directory">▤ CHECK RECIPIENT</button>
+        <button data-tool="poke">☝ PROD BOX</button>
       </div>
 
       <div class="result" id="result">Pick a tool only if you need it.</div>
@@ -194,70 +247,101 @@ body{
   </div>
 
   <section class="summary" id="summary"></section>
-  <div class="footer">Prototype v3 · 6 parcels · more cardboard, less paperwork</div>
+  <div class="footer">Prototype v5 · onboarding + rule clarity pass</div>
 </div>
+
+<div class="briefing-overlay" id="briefingOverlay" role="dialog" aria-modal="true" aria-labelledby="briefingTitle">
+  <div class="briefing-card">
+    <h2 id="briefingTitle">WELCOME TO FINAL DESK</h2>
+    <div class="sub">NIGHT PARCEL OFFICE · SHIFT 04 BRIEFING</div>
+
+    <div class="briefing-steps">
+      <div class="brief-step"><b>1 · CHECK</b><span>Compare the parcel's labelled fields with tonight's regulations.</span></div>
+      <div class="brief-step"><b>2 · INSPECT</b><span>Use the tools only when you need more evidence. Turning the box over reveals extra clues, not hidden required fields.</span></div>
+      <div class="brief-step"><b>3 · STAMP</b><span>Choose a route. If no regulation blocks the parcel, send it onward.</span></div>
+    </div>
+
+    <div class="verb-key">
+      <div class="verb deliver-key"><b>DELIVER</b>Send it onward</div>
+      <div class="verb return-key"><b>RETURN</b>Send it back</div>
+      <div class="verb quarantine-key"><b>QUARANTINE</b>Keep it contained</div>
+    </div>
+
+    <div class="tip"><b>Useful rule of thumb:</b> the wording on parcel labels now matches the wording on the regulation cards. Look for fields such as <b>HANDLING</b>, <b>L-17</b>, <b>ORIGIN</b> and <b>ROUTE STATUS</b>.</div>
+
+    <div class="briefing-footer">
+      <label><input type="checkbox" id="skipBriefing"> Don't show this briefing next time</label>
+      <button class="start-shift" id="startShift" type="button">START SHIFT</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 const rulesBase = [
-  {c:'heavy',t:'HEAVY',f:'> 8 kg + no PRIORITY → RETURN'},
-  {c:'live',t:'LIVE',f:'No L-17 → QUARANTINE'},
-  {c:'mirror',t:'SECTOR 7 MIRROR',f:'Reflective + Sector 7 → QUARANTINE'}
+  {c:'heavy',t:'HEAVY',f:'WEIGHT > 8 kg + HANDLING = STANDARD → RETURN'},
+  {c:'live',t:'LIVE CARGO',f:'CONTENTS = LIVE + L-17 = MISSING → QUARANTINE'},
+  {c:'mirror',t:'SECTOR 7 MIRROR',f:'ORIGIN = SECTOR 7 + CONTENTS = REFLECTIVE → QUARANTINE'}
 ];
 
 const parcels = [
   {
     id:'01', sender:'B. Price', recipient:'M. Holt', dest:'17 Alder Road',
-    weight:'11.2 kg', post:'Night Standard', marks:['FRAGILE'], cls:'dented',
+    weight:'11.2 kg', handling:'STANDARD', l17:'—', origin:'LOCAL', contents:'FRAGILE',
+    marks:['FRAGILE'], cls:'dented',
     odd:'Normal box. Suspiciously normal.', correct:'RETURN',
-    back:'BACK: No PRIORITY handling label.',
+    back:'BACK: Sender has written “please hurry” three times.',
     inspect:{
-      weigh:'11.2 kg. Heavy enough to require PRIORITY.',
+      weigh:'WEIGHT: 11.2 kg.',
       listen:'Nothing. Beautiful.',
-      directory:'M. Holt — alive, impatient.',
+      directory:'RECIPIENT STATUS: ACTIVE.',
       poke:'Cardboard. No retaliation.'
     }
   },
   {
     id:'02', sender:'Bell Family', recipient:'R. Bell', dest:'6 Orchard Row',
-    weight:'1.1 kg', post:'Night Standard', marks:['FORM L-17','LIVE'], cls:'wiggle has-eyes',
+    weight:'1.1 kg', handling:'STANDARD', l17:'PRESENT', origin:'LOCAL', contents:'LIVE',
+    marks:['MR NIBBLES'], cls:'wiggle has-eyes',
     odd:'The box sneezes.', correct:'DELIVER',
-    back:'FORM L-17 — Name: MR NIBBLES. Species: “Mostly.”',
+    back:'L-17 NAME: MR NIBBLES. SPECIES: “MOSTLY.”',
     inspect:{
-      weigh:'1.1 kg. It hops off the scale.',
+      weigh:'WEIGHT: 1.1 kg. It hops off the scale.',
       listen:'Tiny claws. Then: “mrrp.”',
-      directory:'R. Bell — registered owner of Mr Nibbles.',
+      directory:'RECIPIENT STATUS: ACTIVE. Registered owner of Mr Nibbles.',
       poke:'Something pokes you back.'
     },
     choice(action,state){
       if(action==='QUARANTINE'){
         state.nibbles=true;
-        state.inc.push('Mr Nibbles detained despite valid paperwork.');
+        state.inc.push('Mr Nibbles detained despite L-17 = PRESENT.');
       }
     }
   },
   {
     id:'03', sender:'Sector 7 Antiques', recipient:'L. Marsh', dest:'22 Grafton Lane',
-    weight:'3.0 kg', post:'Priority', marks:['SECTOR 7','REFLECTIVE'], cls:'shiny',
+    weight:'3.0 kg', handling:'PRIORITY', l17:'—', origin:'SECTOR 7', contents:'REFLECTIVE',
+    marks:['HANDLE CAREFULLY'], cls:'shiny',
     odd:'The cardboard reflects your face. Poorly.', correct:'QUARANTINE',
-    back:'CONTENTS: ONE HAND MIRROR. “Probably harmless.” — vendor',
+    back:'CONTENTS DETAIL: ONE HAND MIRROR. “Probably harmless.” — vendor',
     inspect:{
-      weigh:'3.0 kg.',
+      weigh:'WEIGHT: 3.0 kg.',
       listen:'The fluorescent hum repeats one second late.',
-      directory:'L. Marsh — alive. Reflection status unavailable.',
+      directory:'RECIPIENT STATUS: ACTIVE.',
       poke:'Your finger touches itself from the other side.'
     },
     choice(action,state){
       if(action==='DELIVER'){
         state.mirror=true;
-        state.inc.push('Sector 7 mirror released into network.');
+        state.inc.push('Sector 7 reflective item released into network.');
       }
     }
   },
   {
     id:'04', sender:'Customer Relations', recipient:'FINAL DESK', dest:'THIS DESK',
-    weight:'0.1 kg', post:'Internal', marks:['COMPLAINT'], cls:'',
-    odd:'', correct:'DELIVER', back:'Marked URGENT-ISH.',
+    weight:'0.1 kg', handling:'INTERNAL', l17:'—', origin:'INTERNAL', contents:'DOCUMENTS',
+    marks:['COMPLAINT'], cls:'',
+    odd:'', correct:'DELIVER', back:'BACK: Marked URGENT-ISH.',
     onShow(state,p){
       if(state.nibbles){
         p.odd='“WHERE IS MR NIBBLES? He has his medication at 3.”';
@@ -270,46 +354,58 @@ const parcels = [
       }
     },
     inspect:{
-      weigh:'0.1 kg of administrative disappointment.',
+      weigh:'WEIGHT: 0.1 kg of administrative disappointment.',
       listen:'A long sigh from inside the envelope.',
-      directory:'Recipient found. Unfortunately.',
+      directory:'RECIPIENT STATUS: PRESENT AT DESK.',
       poke:'The complaint crumples itself.'
     }
   },
   {
     id:'05', sender:'Edith Vale', recipient:'Arthur Vale', dest:'16 Willow Lane',
-    weight:'0.8 kg', post:'Night Standard', marks:['PERSONAL'], cls:'frost',
+    weight:'0.8 kg', handling:'STANDARD', l17:'—', origin:'LOCAL', contents:'PERSONAL',
+    recipientStatus:'CHECK DIRECTORY', marks:['PERSONAL'], cls:'frost',
     odd:'Old birthday paper. “For Arthur.”', correct:'RETURN',
     back:'NOTE: “Still warm, if they hurry.”',
     inspect:{
-      weigh:'0.8 kg.',
+      weigh:'WEIGHT: 0.8 kg.',
       listen:'Nothing. Then a faint pen scratch.',
-      directory:'Arthur Vale — deceased, 14 years.',
+      directory:'RECIPIENT STATUS: DECEASED. Recorded 14 years ago.',
       poke:'The parcel is warm. The desk around it is cold.'
     },
     choice(action,state){ state.edith=action; }
   },
   {
     id:'06', sender:'NIGHT PARCEL OFFICE — TOMORROW', recipient:'YOU', dest:'BEHIND YOU',
-    weight:'?', post:'NONE', marks:['DO NOT RETURN'], cls:'has-eyes teeth',
+    weight:'?', handling:'NONE', l17:'—', origin:'TOMORROW', contents:'UNKNOWN',
+    routeStatus:'IMPOSSIBLE', marks:['DO NOT RETURN'], cls:'has-eyes teeth',
     odd:'There is no parcel. Only a label stuck to the desk.', correct:'QUARANTINE',
     back:'BACK: There is no underside.',
     inspect:{
-      weigh:'0.0 kg. Then the scale displays your birthday.',
+      weigh:'WEIGHT: 0.0 kg. Then the scale displays your birthday.',
       listen:'Your own voice: “Don’t turn around.”',
-      directory:'Recipient: PRESENT. Destination: PRESENT.',
+      directory:'RECIPIENT STATUS: PRESENT. DESTINATION STATUS: ALSO PRESENT.',
       poke:'The desk pokes you back.'
     },
     choice(action,state){
       state.final=action;
-      state.inc.push('One impossible address formally acknowledged.');
+      state.inc.push('One impossible route formally acknowledged.');
     }
   }
 ];
 
 const state={
   i:0,lock:false,processed:0,deliver:0,return:0,quarantine:0,errors:0,
-  nibbles:false,mirror:false,edith:null,final:null,complaints:[],complaintAdded:false,inc:[]
+  nibbles:false,mirror:false,edith:null,final:null,complaints:[],complaintAdded:false,inc:[],
+  history:[], tutorial:true
+};
+
+const reasons={
+  '01':'WEIGHT > 8 kg and HANDLING = STANDARD.',
+  '02':'CONTENTS = LIVE, but L-17 = PRESENT, so no rule blocks delivery.',
+  '03':'ORIGIN = SECTOR 7 and CONTENTS = REFLECTIVE.',
+  '04':'No current regulation blocks this INTERNAL document.',
+  '05':'RECIPIENT STATUS = DECEASED.',
+  '06':'ROUTE STATUS = IMPOSSIBLE.'
 };
 
 const $=s=>document.querySelector(s);
@@ -319,14 +415,24 @@ const result=$('#result'),toast=$('#toast'),speech=$('#speech');
 function current(){return parcels[state.i]}
 
 function renderRules(){
-  $('#rules').innerHTML=rulesBase.map(r=>`
-    <div class="rule ${r.c}">
+  let rules=[...rulesBase];
+
+  if(state.i>=4){
+    rules.push({c:'dead new-rule',t:'DECEASED RECIPIENT',f:'RECIPIENT STATUS = DECEASED → RETURN'});
+  }
+
+  if(state.i>=5){
+    rules.push({c:'route new-rule',t:'IMPOSSIBLE ROUTE',f:'ROUTE STATUS = IMPOSSIBLE → QUARANTINE'});
+  }
+
+  $('#rules').innerHTML=rules.map((r,index)=>`
+    <div class="rule ${r.c}${state.tutorial && state.i===0 && index===0?' tutorial-focus':''}">
       <b>${r.t}</b>
       <div class="formula">${r.f}</div>
     </div>`).join('') +
     (state.i===5 ? `
       <div class="rule amend">
-        <b>HANDWRITTEN AMENDMENT</b>
+        <b>HANDWRITTEN NOTE</b>
         <div class="formula">Do <em>NOT</em> look behind you.</div>
       </div>` : '');
 }
@@ -345,8 +451,13 @@ function showParcel(){
   $('#bar').style.width=`${state.i/parcels.length*100}%`;
   $('#incidents').textContent=state.inc.length;
   result.innerHTML='Pick a tool only if you need it.';
+  const feedback=$('#routingFeedback');feedback.className='feedback-strip';feedback.textContent='';
   parcel.className='parcel arrive '+(p.cls||'');
   parcel.classList.remove('flipped','show-paw','poked','route-deliver','route-return','route-quarantine');
+
+  const optionalFacts=[];
+  if(p.recipientStatus) optionalFacts.push(`<div class="fact"><b>RECIPIENT STATUS</b>${p.recipientStatus}</div>`);
+  if(p.routeStatus) optionalFacts.push(`<div class="fact"><b>ROUTE STATUS</b>${p.routeStatus}</div>`);
 
   label.innerHTML=`
     <div style="font-size:9px;letter-spacing:.14em;color:#70766e">FINAL ROUTING LABEL · ${p.id}</div>
@@ -354,8 +465,14 @@ function showParcel(){
     <div class="label-grid">
       <div class="f"><b>FROM</b>${p.sender}</div>
       <div class="f"><b>TO</b>${p.recipient}</div>
-      <div class="f"><b>WEIGHT</b>${p.weight}</div>
-      <div class="f"><b>POSTAGE</b>${p.post}</div>
+    </div>
+    <div class="facts">
+      <div class="fact${state.tutorial && state.i===0?' tutorial-focus':''}"><b>WEIGHT</b>${p.weight}</div>
+      <div class="fact${state.tutorial && state.i===0?' tutorial-focus':''}"><b>HANDLING</b>${p.handling}</div>
+      <div class="fact"><b>L-17</b>${p.l17}</div>
+      <div class="fact"><b>ORIGIN</b>${p.origin}</div>
+      <div class="fact"><b>CONTENTS</b>${p.contents}</div>
+      ${optionalFacts.join('')}
     </div>
     <div class="marks">${p.marks.map(m=>`<span class="mark">${m}</span>`).join('')}</div>`;
 
@@ -366,8 +483,17 @@ function showParcel(){
 
   $('#window').classList.toggle('silhouette',state.i===5);
 
+  const tutorial=$('#tutorialBanner');
+  tutorial.classList.toggle('show',state.tutorial && state.i===0);
+
   if(state.mirror && state.i===3){
     say('ADDRESS PRINTER FAULT. Management has blamed humidity.');
+  }
+  if(state.i===4){
+    setTimeout(()=>say('NEW REGULATION PINNED: DECEASED RECIPIENT.'),250);
+  }
+  if(state.i===5){
+    setTimeout(()=>say('NEW REGULATION PINNED: IMPOSSIBLE ROUTE.'),250);
   }
 }
 
@@ -398,6 +524,30 @@ function noise(kind){
   }catch(e){}
 }
 
+const music={
+  enabled:true,started:false,ctx:null,nodes:[],
+  start(){
+    if(!this.enabled||this.started)return;
+    try{
+      const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return;
+      this.ctx=this.ctx||new Ctx();const ac=this.ctx;if(ac.state==='suspended')ac.resume();
+      const master=ac.createGain();master.gain.value=.028;master.connect(ac.destination);
+      const drone=ac.createOscillator(),droneGain=ac.createGain();drone.type='sine';drone.frequency.value=55;droneGain.gain.value=.52;drone.connect(droneGain).connect(master);
+      const fifth=ac.createOscillator(),fifthGain=ac.createGain();fifth.type='triangle';fifth.frequency.value=82.5;fifthGain.gain.value=.13;fifth.connect(fifthGain).connect(master);
+      const hum=ac.createOscillator(),humGain=ac.createGain();hum.type='sine';hum.frequency.value=100;humGain.gain.value=.055;hum.connect(humGain).connect(master);
+      const lfo=ac.createOscillator(),lfoGain=ac.createGain();lfo.frequency.value=.075;lfoGain.gain.value=.010;lfo.connect(lfoGain).connect(master.gain);
+      drone.start();fifth.start();hum.start();lfo.start();
+      this.nodes=[master,drone,droneGain,fifth,fifthGain,hum,humGain,lfo,lfoGain];this.started=true;
+    }catch(e){}
+  },
+  stop(){if(!this.started)return;for(const n of this.nodes){try{if(typeof n.stop==='function')n.stop()}catch(e){}try{if(typeof n.disconnect==='function')n.disconnect()}catch(e){}}this.nodes=[];this.started=false;},
+  toggle(){this.enabled=!this.enabled;if(this.enabled)this.start();else this.stop();const b=$('#musicToggle');b.textContent=this.enabled?'♫ MUSIC: ON':'♫ MUSIC: OFF';b.classList.toggle('on',this.enabled);b.setAttribute('aria-pressed',String(this.enabled));}
+};
+$('#musicToggle').classList.add('on');
+$('#musicToggle').addEventListener('click',()=>music.toggle());
+document.addEventListener('pointerdown',()=>music.start(),{once:true});
+document.addEventListener('keydown',()=>music.start(),{once:true});
+
 document.querySelectorAll('[data-tool]').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const p=current(),tool=btn.dataset.tool;
@@ -405,7 +555,7 @@ document.querySelectorAll('[data-tool]').forEach(btn=>{
 
     if(tool==='flip'){
       parcel.classList.toggle('flipped');
-      result.innerHTML=`<strong>FLIPPED</strong>${parcel.classList.contains('flipped')?p.back:'Front side restored.'}`;
+      result.innerHTML=`<strong>BACK OF BOX</strong>${parcel.classList.contains('flipped')?p.back:'Front side restored.'}`;
       return;
     }
 
@@ -441,8 +591,17 @@ function choose(action){
 
   state.processed++;
   state[action.toLowerCase()]++;
-  if(action!==p.correct)state.errors++;
+  const isCorrect=action===p.correct;
+  if(!isCorrect)state.errors++;
+  state.history.push({id:p.id,parcel:p.recipient||p.dest,chosen:action,expected:p.correct,correct:isCorrect,reason:reasons[p.id]||''});
   if(p.choice)p.choice(action,state);
+  if(state.i===0){
+    state.tutorial=false;
+  }
+
+  const feedback=$('#routingFeedback');
+  feedback.className='feedback-strip show '+(isCorrect?'good':'bad');
+  feedback.textContent=isCorrect?`✓ Correct routing — ${reasons[p.id]||'Decision matches shift rules.'}`:`✕ Routing error — expected ${p.correct}. ${reasons[p.id]||''}`;
 
   const mark=$('#stampMark');
   mark.textContent=action;
@@ -469,25 +628,41 @@ function choose(action){
 
 function endShift(){
   $('#game').style.display='none';
-  const grade=state.errors<=1?'ADEQUATE':state.errors<=3?'CONDITIONALLY ADEQUATE':'TECHNICALLY PRESENT';
-  const incidents=[...state.inc];
+  const correct=state.processed-state.errors;
+  const accuracy=state.processed?Math.round(correct/state.processed*100):0;
 
+  let grade='TECHNICALLY PRESENT';
+  let verdict='Management confirms you attended the shift.';
+  if(accuracy===100){grade='UNCOMFORTABLY COMPETENT';verdict='Perfect routing. Management is concerned this may raise expectations for everyone else.';}
+  else if(accuracy>=80){grade='RELIABLY ADEQUATE';verdict='Strong shift. A small amount of supernatural admin remains attributable to normal wear and tear.';}
+  else if(accuracy>=60){grade='ADEQUATE';verdict='You survived the paperwork. Several parcels did not.';}
+  else{grade='REQUIRES A FORM';verdict='Routing accuracy was low. Fortunately, the complaints department is also missing.';}
+
+  const incidents=[...state.inc];
   if(state.mirror)incidents.push('Several addresses printed backwards.');
   if(state.edith==='DELIVER')incidents.push('Mail delivered to a deceased recipient; receipt pending.');
-  if(!incidents.length)incidents.push('No incidents recognised by management.');
+  if(!incidents.length)incidents.push('No supernatural incidents officially recognised.');
 
-  const hook=state.edith==='DELIVER'
-    ? 'At 02:31 a receipt arrives from Arthur Vale.'
-    : 'At 02:31 three knocks sound from behind the frosted window.';
+  const hook=state.edith==='DELIVER'?'At 02:31 a receipt arrives from Arthur Vale.':'At 02:31 three knocks sound from behind the frosted window.';
+  const reviewRows=state.history.map(h=>`<div class="review-row"><span><b>Parcel ${h.id}</b> — ${h.parcel}</span><span class="${h.correct?'ok':'no'}">${h.chosen}</span><span>${h.expected}</span><span>${h.correct?'✓ Correct':'✕ '+h.reason}</span></div>`).join('');
+  const misses=state.history.filter(h=>!h.correct).length;
 
   $('#summary').innerHTML=`
-    <h2>SHIFT ASSESSMENT</h2>
-    <div class="grade">${grade}</div>
-    <p>Processed <b>${state.processed}</b> · Delivered <b>${state.deliver}</b> · Returned <b>${state.return}</b> · Quarantined <b>${state.quarantine}</b></p>
-    <h3>INCIDENTS</h3>
-    <ul>${incidents.map(i=>`<li>${i}</li>`).join('')}</ul>
-    <p><b>${hook}</b></p>
-    <p>Management has elected not to investigate further.</p>
+    <h2>NIGHT PARCEL OFFICE — SHIFT ASSESSMENT</h2>
+    <div class="kicker" style="color:#686b62;margin-top:4px">FINAL DESK · SHIFT 04 · PERFORMANCE REVIEW</div>
+    <div class="results-hero">
+      <div class="score-ring" style="--score:${accuracy}"><div class="score-value">${accuracy}%<small>ROUTING ACCURACY</small></div></div>
+      <div><div class="grade">${grade}</div><div class="verdict">${verdict}</div><div class="results-note"><b>${correct} of ${state.processed}</b> parcels matched the shift regulations. ${misses?`${misses} decision${misses===1?' needs':'s need'} review below.`:'No routing corrections required.'}</div></div>
+    </div>
+    <div class="result-stats">
+      <div class="stat"><b>${correct}</b><span>CORRECT</span></div>
+      <div class="stat"><b>${state.errors}</b><span>ERRORS</span></div>
+      <div class="stat"><b>${state.quarantine}</b><span>QUARANTINED</span></div>
+      <div class="stat"><b>${incidents.length}</b><span>INCIDENTS</span></div>
+    </div>
+    <div class="review"><h3>ROUTING REVIEW</h3><div class="review-row header"><span>PARCEL</span><span>YOU CHOSE</span><span>EXPECTED</span><span>REVIEW</span></div>${reviewRows}</div>
+    <h3>INCIDENT REPORT</h3><ul>${incidents.map(i=>`<li>${i}</li>`).join('')}</ul>
+    <p><b>${hook}</b></p><p>Management has elected not to investigate further.</p>
     <button class="restart" id="restart">ANOTHER SHIFT</button>`;
   $('#summary').classList.add('show');
   $('#restart').addEventListener('click',()=>location.reload());
@@ -498,6 +673,36 @@ setInterval(()=>{
   minute++;
   $('#clock').textContent=`02:${String(minute).padStart(2,'0')}`;
 },20000);
+
+
+const briefing=$('#briefingOverlay');
+const skipBriefing=$('#skipBriefing');
+
+function briefingWasSkipped(){
+  try{return localStorage.getItem('nightParcelBriefed')==='1'}catch(e){return false}
+}
+
+function openBriefing(){
+  briefing.classList.add('show');
+  setTimeout(()=>$('#startShift').focus(),0);
+}
+
+function closeBriefing(){
+  if(skipBriefing.checked){
+    try{localStorage.setItem('nightParcelBriefed','1')}catch(e){}
+  }
+  briefing.classList.remove('show');
+  music.start();
+}
+
+$('#startShift').addEventListener('click',closeBriefing);
+$('#helpToggle').addEventListener('click',openBriefing);
+
+if(briefingWasSkipped()){
+  state.tutorial=false;
+}else{
+  openBriefing();
+}
 
 renderRules();
 showParcel();
