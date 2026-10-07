@@ -1,30 +1,28 @@
-# Night Parcel Office — 5 Minute Prototype
+# Night Parcel Office — Prototype v6
 
-This is a self-contained browser prototype based on the Notion page **Night Parcel Office — Game Design & Prototype Handoff**.
+Mobile-friendly layout pass.
 
-## Run
+## Mobile changes
+- Routing buttons stay visible at the bottom of the desk.
+- DELIVER / RETURN / QUARANTINE remain side-by-side on phones.
+- Onboarding modal scrolls safely on small screens.
+- START SHIFT is pinned at the bottom of the onboarding card.
+- Parcel height and typography are reduced on narrow screens.
+- Rule cards and label fields reflow without horizontal overflow.
+- Inspection tools use a compact layout.
+- Decorative desk props hide on mobile.
+- Results screen reflows for narrow widths.
+- Touch targets are larger.
 
-1. Unzip the download.
-2. Double-click `index.html`.
-3. Play in your browser.
+## Run locally
 
-No install, server, API key, internet connection, or external assets are required.
+```bash
+cd ~/Developer/night-parcel-office
+open index.html
+```
 
-## Prototype scope
+Or:
 
-This deliberately compresses the larger three-shift concept into one short 12-parcel shift so the core hook can be judged quickly.
-
-Included:
-- DELIVER / RETURN / QUARANTINE
-- visible shift rules
-- optional inspection tools
-- Edith Vale recurring story beat
-- cursed mirror consequence that alters later labels
-- Mr Nibbles creature/complaint consequence
-- temporal parcel callback
-- one corrupted-rule beat
-- office/quarantine reactions
-- end-of-shift incident report
-- ANOTHER SHIFT replay prompt
-
-All presentation is HTML/CSS/JavaScript. The stamp sound is generated locally with Web Audio.
+```bash
+python3 -m http.server 8010
+```

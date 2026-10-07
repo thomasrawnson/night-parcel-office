@@ -1,0 +1,7 @@
+
+# Generated files
+.wrangler/
+dist/
+
+# Local backups
+*-backup.html
