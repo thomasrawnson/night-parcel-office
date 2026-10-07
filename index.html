@@ -375,19 +375,16 @@ button{touch-action:manipulation}
 
 <div class="toast" id="toast"></div>
 
+<script src="parcel-routing.js"></script>
 <script>
-const rulesBase = [
-  {c:'heavy',t:'HEAVY',f:'WEIGHT > 8 kg + HANDLING = STANDARD → RETURN'},
-  {c:'live',t:'LIVE CARGO',f:'CONTENTS = LIVE + L-17 = MISSING → QUARANTINE'},
-  {c:'mirror',t:'SECTOR 7 MIRROR',f:'ORIGIN = SECTOR 7 + CONTENTS = REFLECTIVE → QUARANTINE'}
-];
+const { activeRegulations, routeParcel } = ParcelRouting;
 
 const parcels = [
   {
     id:'01', sender:'B. Price', recipient:'M. Holt', dest:'17 Alder Road',
     weight:'11.2 kg', handling:'STANDARD', l17:'—', origin:'LOCAL', contents:'FRAGILE',
     marks:['FRAGILE'], cls:'dented',
-    odd:'Normal box. Suspiciously normal.', correct:'RETURN',
+    odd:'Normal box. Suspiciously normal.',
     back:'BACK: Sender has written “please hurry” three times.',
     inspect:{
       weigh:'WEIGHT: 11.2 kg.',
@@ -400,7 +397,7 @@ const parcels = [
     id:'02', sender:'Bell Family', recipient:'R. Bell', dest:'6 Orchard Row',
     weight:'1.1 kg', handling:'STANDARD', l17:'PRESENT', origin:'LOCAL', contents:'LIVE',
     marks:['MR NIBBLES'], cls:'wiggle has-eyes',
-    odd:'The box sneezes.', correct:'DELIVER',
+    odd:'The box sneezes.',
     back:'L-17 NAME: MR NIBBLES. SPECIES: “MOSTLY.”',
     inspect:{
       weigh:'WEIGHT: 1.1 kg. It hops off the scale.',
@@ -419,7 +416,7 @@ const parcels = [
     id:'03', sender:'Sector 7 Antiques', recipient:'L. Marsh', dest:'22 Grafton Lane',
     weight:'3.0 kg', handling:'PRIORITY', l17:'—', origin:'SECTOR 7', contents:'REFLECTIVE',
     marks:['HANDLE CAREFULLY'], cls:'shiny',
-    odd:'The cardboard reflects your face. Poorly.', correct:'QUARANTINE',
+    odd:'The cardboard reflects your face. Poorly.',
     back:'CONTENTS DETAIL: ONE HAND MIRROR. “Probably harmless.” — vendor',
     inspect:{
       weigh:'WEIGHT: 3.0 kg.',
@@ -438,7 +435,7 @@ const parcels = [
     id:'04', sender:'Customer Relations', recipient:'FINAL DESK', dest:'THIS DESK',
     weight:'0.1 kg', handling:'INTERNAL', l17:'—', origin:'INTERNAL', contents:'DOCUMENTS',
     marks:['COMPLAINT'], cls:'',
-    odd:'', correct:'DELIVER', back:'BACK: Marked URGENT-ISH.',
+    odd:'', back:'BACK: Marked URGENT-ISH.',
     onShow(state,p){
       if(state.nibbles){
         p.odd='“WHERE IS MR NIBBLES? He has his medication at 3.”';
@@ -460,8 +457,8 @@ const parcels = [
   {
     id:'05', sender:'Edith Vale', recipient:'Arthur Vale', dest:'16 Willow Lane',
     weight:'0.8 kg', handling:'STANDARD', l17:'—', origin:'LOCAL', contents:'PERSONAL',
-    recipientStatus:'CHECK DIRECTORY', marks:['PERSONAL'], cls:'frost',
-    odd:'Old birthday paper. “For Arthur.”', correct:'RETURN',
+    recipientStatus:'CHECK DIRECTORY', directoryStatus:'DECEASED', marks:['PERSONAL'], cls:'frost',
+    odd:'Old birthday paper. “For Arthur.”',
     back:'NOTE: “Still warm, if they hurry.”',
     inspect:{
       weigh:'WEIGHT: 0.8 kg.',
@@ -475,7 +472,7 @@ const parcels = [
     id:'06', sender:'NIGHT PARCEL OFFICE — TOMORROW', recipient:'YOU', dest:'BEHIND YOU',
     weight:'?', handling:'NONE', l17:'—', origin:'TOMORROW', contents:'UNKNOWN',
     routeStatus:'IMPOSSIBLE', marks:['DO NOT RETURN'], cls:'has-eyes teeth',
-    odd:'There is no parcel. Only a label stuck to the desk.', correct:'QUARANTINE',
+    odd:'There is no parcel. Only a label stuck to the desk.',
     back:'BACK: There is no underside.',
     inspect:{
       weigh:'WEIGHT: 0.0 kg. Then the scale displays your birthday.',
@@ -496,15 +493,6 @@ const state={
   history:[], tutorial:true
 };
 
-const reasons={
-  '01':'WEIGHT > 8 kg and HANDLING = STANDARD.',
-  '02':'CONTENTS = LIVE, but L-17 = PRESENT, so no rule blocks delivery.',
-  '03':'ORIGIN = SECTOR 7 and CONTENTS = REFLECTIVE.',
-  '04':'No current regulation blocks this INTERNAL document.',
-  '05':'RECIPIENT STATUS = DECEASED.',
-  '06':'ROUTE STATUS = IMPOSSIBLE.'
-};
-
 const $=s=>document.querySelector(s);
 const parcel=$('#parcel'),label=$('#label'),odd=$('#oddity'),backLabel=$('#backLabel');
 const result=$('#result'),toast=$('#toast'),speech=$('#speech');
@@ -512,15 +500,7 @@ const result=$('#result'),toast=$('#toast'),speech=$('#speech');
 function current(){return parcels[state.i]}
 
 function renderRules(){
-  let rules=[...rulesBase];
-
-  if(state.i>=4){
-    rules.push({c:'dead new-rule',t:'DECEASED RECIPIENT',f:'RECIPIENT STATUS = DECEASED → RETURN'});
-  }
-
-  if(state.i>=5){
-    rules.push({c:'route new-rule',t:'IMPOSSIBLE ROUTE',f:'ROUTE STATUS = IMPOSSIBLE → QUARANTINE'});
-  }
+  const rules=activeRegulations(state.i);
 
   $('#rules').innerHTML=rules.map((r,index)=>`
     <div class="rule ${r.c}${state.tutorial && state.i===0 && index===0?' tutorial-focus':''}">
@@ -688,9 +668,10 @@ function choose(action){
 
   state.processed++;
   state[action.toLowerCase()]++;
-  const isCorrect=action===p.correct;
+  const decision=routeParcel(p,state.i);
+  const isCorrect=action===decision.action;
   if(!isCorrect)state.errors++;
-  state.history.push({id:p.id,parcel:p.recipient||p.dest,chosen:action,expected:p.correct,correct:isCorrect,reason:reasons[p.id]||''});
+  state.history.push({id:p.id,parcel:p.recipient||p.dest,chosen:action,expected:decision.action,correct:isCorrect,reason:decision.reason});
   if(p.choice)p.choice(action,state);
   if(state.i===0){
     state.tutorial=false;
@@ -698,7 +679,7 @@ function choose(action){
 
   const feedback=$('#routingFeedback');
   feedback.className='feedback-strip show '+(isCorrect?'good':'bad');
-  feedback.textContent=isCorrect?`✓ Correct routing — ${reasons[p.id]||'Decision matches shift rules.'}`:`✕ Routing error — expected ${p.correct}. ${reasons[p.id]||''}`;
+  feedback.textContent=isCorrect?`✓ Correct routing — ${decision.reason}`:`✕ Routing error — expected ${decision.action}. ${decision.reason}`;
 
   const mark=$('#stampMark');
   mark.textContent=action;
@@ -711,7 +692,7 @@ function choose(action){
     if(state.i===1)$('#cageEyes').classList.add('show');
   }
 
-  say(action===p.correct?'Routing accepted.':'Routing recorded. Compliance has declined to comment.');
+  say(isCorrect?'Routing accepted.':'Routing recorded. Compliance has declined to comment.');
 
   setTimeout(()=>{
     parcel.classList.add('route-'+action.toLowerCase());

@@ -1,0 +1,8 @@
+{
+  "name": "night-parcel-office",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test"
+  }
+}
