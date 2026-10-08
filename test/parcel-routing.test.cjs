@@ -59,7 +59,10 @@ function game() {
   const element = selector => {
     if (!elements.has(selector)) elements.set(selector, {
       style: {}, classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
-      addEventListener() {}, setAttribute() {}, focus() {}, innerHTML: '', textContent: ''
+      addEventListener() {}, setAttribute() {},
+      focus(options) { this.focused = true; this.focusOptions = options; },
+      scrollIntoView(options) { this.scrollOptions = options; },
+      innerHTML: '', textContent: ''
     });
     return elements.get(selector);
   };
@@ -124,5 +127,10 @@ test('all 729 routing sequences preserve scoring, feedback, incidents and shift 
     assert.equal(state.inc.length, 1 + Number(state.nibbles) + Number(state.mirror));
     assert.equal(g.element('#game').style.display, 'none');
     assert.ok(g.element('#summary').innerHTML.includes(`${Math.round((6-errors)/6*100)}%`));
+    assert.match(g.element('#summary').innerHTML, /id="resultsHeading" tabindex="-1"/);
+    assert.equal(g.element('#summary').scrollOptions.block, 'start');
+    assert.equal(g.element('#summary').scrollOptions.behavior, 'auto');
+    assert.equal(g.element('#resultsHeading').focused, true);
+    assert.equal(g.element('#resultsHeading').focusOptions.preventScroll, true);
   }
 });

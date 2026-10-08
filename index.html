@@ -725,8 +725,9 @@ function endShift(){
   const reviewRows=state.history.map(h=>`<div class="review-row"><span><b>Parcel ${h.id}</b> — ${h.parcel}</span><span class="${h.correct?'ok':'no'}">${h.chosen}</span><span>${h.expected}</span><span>${h.correct?'✓ Correct':'✕ '+h.reason}</span></div>`).join('');
   const misses=state.history.filter(h=>!h.correct).length;
 
-  $('#summary').innerHTML=`
-    <h2>NIGHT PARCEL OFFICE — SHIFT ASSESSMENT</h2>
+  const summary=$('#summary');
+  summary.innerHTML=`
+    <h2 id="resultsHeading" tabindex="-1">NIGHT PARCEL OFFICE — SHIFT ASSESSMENT</h2>
     <div class="kicker" style="color:#686b62;margin-top:4px">FINAL DESK · SHIFT 04 · PERFORMANCE REVIEW</div>
     <div class="results-hero">
       <div class="score-ring" style="--score:${accuracy}"><div class="score-value">${accuracy}%<small>ROUTING ACCURACY</small></div></div>
@@ -742,7 +743,9 @@ function endShift(){
     <h3>INCIDENT REPORT</h3><ul>${incidents.map(i=>`<li>${i}</li>`).join('')}</ul>
     <p><b>${hook}</b></p><p>Management has elected not to investigate further.</p>
     <button class="restart" id="restart">ANOTHER SHIFT</button>`;
-  $('#summary').classList.add('show');
+  summary.classList.add('show');
+  summary.scrollIntoView({block:'start',behavior:'auto'});
+  $('#resultsHeading').focus({preventScroll:true});
   $('#restart').addEventListener('click',()=>location.reload());
 }
 
