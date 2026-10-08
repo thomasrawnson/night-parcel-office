@@ -1,3 +1,42 @@
+# Night Parcel Office — Roadmap v0.2 and AI Handover
+**Updated:** 2026-10-08 | **Status:** Approved development direction; proposed features not yet implemented.
+**Repository:** https://github.com/thomasrawnson/night-parcel-office
+
+## READ FIRST — Current decisions (v0.2)
+1. **Portfolio:** friends' prototype preference is Night Parcel Office #1, Personal Effects #2, Anomaly Lab #3. Focus game-development effort on Night Parcel Office; other game concepts paused. This is qualitative feedback, not commercial proof.
+2. **Delivery approach:** use **direct Codex** for gameplay development while Pluto Studio Lite is under evaluation; do not block this game's progress on Studio Lite, nor turn NPO into a Lite-building exercise. Reassess later using measured time, cost and QA.
+3. **First objective:** make a **three-shift** experience understandable and genuinely fun. Never presume a feature is absent until checking the current repo.
+4. **Sequence:** **A:** polish onboarding, readable rules, tactile stamp feedback, informative results, responsive layout and tests; **B1:** amendments + explicit rule precedence + validator, **playtest**; **B2:** inspection with meaningful cost, **playtest**; **B3:** exactly one deterministic consequence chain and minimal versioned save, **external playtest/go-no-go**; **B4:** recurring characters, a five-shift extension and ONE representative art screen only **after** the gate.
+5. **No premature scope:** defer full diegetic desk redesign, music/ambience beyond simple stamp effects, equipment upgrades, endless mode, achievements, complicated reputation, full campaign content, storefront engineering and monetisation.
+6. **Conditional full-game aspiration:** about **15 hand-crafted shifts / 90 minutes** with a proper ending (hypotheses, not a commitment); abandon the former 25-shift/2–4-hour initial-release ambition unless playtesting supports expansion.
+7. **Validation:** thresholds from v0.1 are directional, not statistically meaningful pass/fail rules for 10–20 people. Include some unfamiliar testers. After Shift 3 offer a neutral **“Start Shift 4?”** option without prompting or an observer. Capture actual completion/voluntary continuation, reasons, favourite moment, confusion vs boredom. If <50% reach Shift 3 due chiefly to confusion, fix rule presentation then retest once; if boredom or persistent rule confusion remains, stop or redesign the loop. Continue only when the majority choose to keep playing and can describe a specific enjoyable or understandable moment.
+8. **Engineering guardrail:** maintain current routing correctness and Node test coverage, including all 729 sequences; before modifying rule representations, inspect and re-run current tests. Treat intentional overlapping rules with documented unambiguous precedence as valid; flag ties with different outcomes and order-dependent fragile content.
+9. **Document maintenance:** below is v0.1 context retained for reference, NOT current accepted scope where it conflicts with this decisions section. Record decisions and actual implementation evidence distinctly.
+
+## Revised execution milestones (authoritative for v0.2)
+| Slice | Implement | Validation / exit |
+|---|---|---|
+| A — core loop | Audit current v6; fix only real gaps in onboarding, rules readability, stamp feedback, report, mobile, tests; minimal stamp sound allowed | 3 coherent shifts; new players can state the rule behind a decision |
+| B1 — rule depth | Amendments, rule ordering/priority, content checks with human-readable reasons | All parcels yield defensible deterministic results; test rule complexity alone |
+| B2 — inspection choice | Introduce a cost or limited inspections; present tradeoff clearly | Compare player engagement with B1; remove if inspection feels automatic |
+| B3 — consequence proof | One scripted mirror/address reversal (or similarly small effect), state flags; minimally save version+reached shift+flags | 3-shift independent test, unsupervised continuation invitation, go/no-go |
+| B4 — expand carefully | Recurring character(s), 5 shifts, one polished art screen | Only after B3 evidence supports continuation |
+| C — conditional production | ~15 meaningful shifts, ending, focused art/audio and mobile polish | Beta and audience validation; defer peripheral features |
+
+**Technical specification for B1:** preserve current “first matching regulation wins” semantics unless an explicit reviewed migration changes them. Represent `id`, `priority/order`, `conditions`, `action`, and reason in validated content. A validator examines all matches; fails zero matches unless explicitly allowed, conflicting top-priority ties and unexpected order sensitivity; permits intentionally prioritised overlaps. Generate results-screen reasons from the same source as routing.
+
+**Technical specification for B3:** a scripted state flag such as `mirrorDeliveredWrongly` applies a declared transform to next-shift content/rules. Rules must not call the story engine. Store a small version-stamped serialisable object, not a premature save architecture; migration framework later when required.
+
+## Immediate development instruction for Codex
+Before implementing changes, inspect `index.html`, `parcel-routing.js`, tests and current `git status`. Run `node --test`. Identify which A items already work, explicitly show actual defects/gaps, then complete the **smallest one** on an isolated branch with regression tests. Preserve direct `index.html` play, mobile controls and existing routes; do not refactor unrelated systems. Report tests run, gameplay manual checks still needed, and changed files. Repeat in bounded slices with commits.
+
+## v0.2 decision record
+**Accepted 2026-10-08:** independent AI review recommending three-shift gate, B1/B2/B3 decomposition, reduced release scope, minimal early saves, postponed art/audio/monetisation, and real external playtesting. **Refinement:** minimal versioned save lives in B3; B1 and B2 each have standalone playtests; intentional precedence overlaps are permissible. **Superseded v0.1 proposals:** a mandatory five-shift first slice, 25-shift commercial baseline, ambience in A, production art before the gate, and all v0.1 calendar estimates as delivery commitments.
+
+---
+
+## Appendix — Original v0.1 proposal (historical; superseded where inconsistent)
+
 # Night Parcel Office — Product Roadmap & AI Handover
 **Date:** 2026-10-08  
 **Status:** Planning proposal; not an implementation record  
