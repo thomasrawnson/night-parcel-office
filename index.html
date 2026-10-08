@@ -144,6 +144,7 @@ body{
   box-shadow:0 22px 80px #0009;padding:24px
 }
 .briefing-card h2{font-size:24px;margin:0 0 5px}.briefing-card .sub{color:#67695f;font-size:11px;letter-spacing:.1em;margin-bottom:18px}
+.shift-brief{font-size:13px;line-height:1.5;margin:0 0 14px;max-width:64ch}
 .briefing-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:14px 0}
 .brief-step{background:#d7cfb8;border:1px solid #aaa18c;border-radius:5px;padding:11px}
 .brief-step b{display:block;font-size:12px;margin-bottom:5px}.brief-step span{font-size:11px;line-height:1.4}
@@ -349,25 +350,28 @@ button{touch-action:manipulation}
 
 <div class="briefing-overlay" id="briefingOverlay" role="dialog" aria-modal="true" aria-labelledby="briefingTitle">
   <div class="briefing-card">
-    <h2 id="briefingTitle">WELCOME TO FINAL DESK</h2>
+    <h2 id="briefingTitle">SHIFT 1 — LEARNING THE JOB</h2>
     <div class="sub" id="briefingSubtitle">NIGHT PARCEL OFFICE · SHIFT 1 · LEARNING BRIEFING</div>
+    <p class="shift-brief" id="briefingCopy">Learn the desk, read each regulation, and stamp three parcels. Management considers this sufficient training.</p>
 
-    <div class="briefing-steps">
-      <div class="brief-step"><b>1 · CHECK</b><span>Compare the parcel's labelled fields with tonight's regulations.</span></div>
-      <div class="brief-step"><b>2 · INSPECT</b><span>Use the tools only when you need more evidence. Turning the box over reveals extra clues, not hidden required fields.</span></div>
-      <div class="brief-step"><b>3 · STAMP</b><span>Choose a route. If no regulation blocks the parcel, send it onward.</span></div>
+    <div id="onboardingGuide">
+      <div class="briefing-steps">
+        <div class="brief-step"><b>1 · CHECK</b><span>Compare the parcel's labelled fields with tonight's regulations.</span></div>
+        <div class="brief-step"><b>2 · INSPECT</b><span>Use the tools only when you need more evidence. Turning the box over reveals extra clues, not hidden required fields.</span></div>
+        <div class="brief-step"><b>3 · STAMP</b><span>Choose a route. If no regulation blocks the parcel, send it onward.</span></div>
+      </div>
+
+      <div class="verb-key">
+        <div class="verb deliver-key"><b>DELIVER</b>Send it onward</div>
+        <div class="verb return-key"><b>RETURN</b>Send it back</div>
+        <div class="verb quarantine-key"><b>QUARANTINE</b>Keep it contained</div>
+      </div>
+
+      <div class="tip"><b>Useful rule of thumb:</b> the wording on parcel labels matches the wording on the regulation cards. Look for fields such as <b>HANDLING</b>, <b>L-17</b>, <b>ORIGIN</b> and <b>ROUTE STATUS</b>.</div>
     </div>
-
-    <div class="verb-key">
-      <div class="verb deliver-key"><b>DELIVER</b>Send it onward</div>
-      <div class="verb return-key"><b>RETURN</b>Send it back</div>
-      <div class="verb quarantine-key"><b>QUARANTINE</b>Keep it contained</div>
-    </div>
-
-    <div class="tip"><b>Useful rule of thumb:</b> the wording on parcel labels now matches the wording on the regulation cards. Look for fields such as <b>HANDLING</b>, <b>L-17</b>, <b>ORIGIN</b> and <b>ROUTE STATUS</b>.</div>
 
     <div class="briefing-footer">
-      <label><input type="checkbox" id="skipBriefing"> Don't show this briefing next time</label>
+      <label id="briefingSkip"><input type="checkbox" id="skipBriefing"> Don't show this briefing next time</label>
       <button class="start-shift" id="startShift" type="button">START SHIFT</button>
     </div>
   </div>
@@ -528,7 +532,8 @@ const parcels = [
 
 const shiftPlan = [
   {
-    number:1, title:'LEARNING',
+    number:1, title:'LEARNING', briefingTitle:'LEARNING THE JOB',
+    briefing:'Learn the desk, read each regulation, and stamp three parcels. Management considers this sufficient training.',
     entries:[
       {parcelId:'01', regulationIndex:0},
       {parcelId:'07', regulationIndex:0},
@@ -536,7 +541,8 @@ const shiftPlan = [
     ]
   },
   {
-    number:2, title:'APPLYING',
+    number:2, title:'APPLYING', briefingTitle:'APPLYING REGULATIONS',
+    briefing:'The same regulations remain in force. Read precisely; resemblance is not evidence, despite departmental custom.',
     entries:[
       {parcelId:'02', regulationIndex:0},
       {parcelId:'04', regulationIndex:0},
@@ -544,7 +550,8 @@ const shiftPlan = [
     ]
   },
   {
-    number:3, title:'MASTERING',
+    number:3, title:'MASTERING', briefingTitle:'CHECKING RECIPIENTS',
+    briefing:'Recipient records may now require inspection. Confirm suspicious details before committing the department to anything.',
     entries:[
       {parcelId:'09', regulationIndex:4},
       {parcelId:'05', regulationIndex:4},
@@ -592,6 +599,11 @@ function startShift(shiftIndex,{tutorial=false,moveFocus=true}={}){
   const heading=$('#shiftHeading');
   heading.textContent=`FINAL DESK — SHIFT ${shift.number} · ${shift.title}`;
   $('#briefingSubtitle').textContent=`NIGHT PARCEL OFFICE · SHIFT ${shift.number} · ${shift.title} BRIEFING`;
+  $('#briefingTitle').textContent=`SHIFT ${shift.number} — ${shift.briefingTitle}`;
+  $('#briefingCopy').textContent=shift.briefing;
+  $('#onboardingGuide').style.display=shiftIndex===0?'':'none';
+  $('#briefingSkip').style.display=shiftIndex===0?'':'none';
+  $('#startShift').textContent=shiftIndex===0?'START SHIFT':`BEGIN SHIFT ${shift.number}`;
   showParcel();
   if(moveFocus){
     heading.scrollIntoView({block:'start',behavior:'auto'});
@@ -829,7 +841,7 @@ function endShift(){
 
   const summary=$('#summary');
   summary.innerHTML=`
-    <h2 id="resultsHeading" tabindex="-1">NIGHT PARCEL OFFICE — SHIFT ASSESSMENT</h2>
+    <h2 id="resultsHeading" tabindex="-1">SHIFT ${shift.number} ASSESSMENT — ${shift.title}</h2>
     <div class="kicker" style="color:#686b62;margin-top:4px">FINAL DESK · SHIFT ${shift.number} · ${shift.title} · PERFORMANCE REVIEW</div>
     <div class="results-hero">
       <div class="score-ring" style="--score:${accuracy}"><div class="score-value">${accuracy}%<small>ROUTING ACCURACY</small></div></div>
@@ -844,14 +856,17 @@ function endShift(){
     <div class="review"><h3>ROUTING REVIEW</h3><div class="review-row header"><span>PARCEL</span><span>YOU CHOSE</span><span>EXPECTED</span><span>REVIEW</span></div>${reviewRows}</div>
     <h3>INCIDENT REPORT</h3><ul>${incidents.map(i=>`<li>${i}</li>`).join('')}</ul>
     <p><b>${hook}</b></p><p>Management has elected not to investigate further.</p>
-    ${finalShift?'<div class="results-note"><b>NIGHT SHIFT COMPLETE</b><br>All three shifts have been processed.</div>':''}
+    ${finalShift?'<div class="results-note"><b>NIGHT SHIFT COMPLETE</b><br>Three shifts cleared. The night is no safer, but the paperwork is immaculate.</div>':''}
     <button class="restart" id="shiftAction">${finalShift?'REPLAY FROM SHIFT 1':'NEXT SHIFT'}</button>`;
   summary.classList.add('show');
   summary.scrollIntoView({block:'start',behavior:'auto'});
   $('#resultsHeading').focus({preventScroll:true});
   $('#shiftAction').addEventListener('click',()=>{
     if(finalShift)location.reload();
-    else startShift(state.shift+1);
+    else{
+      startShift(state.shift+1);
+      openBriefing();
+    }
   });
 }
 
@@ -871,7 +886,7 @@ function briefingWasSkipped(){
 
 function openBriefing(){
   briefing.classList.add('show');
-  setTimeout(()=>$('#startShift').focus(),0);
+  $('#startShift').focus();
 }
 
 function closeBriefing(){
@@ -880,6 +895,7 @@ function closeBriefing(){
   }
   briefing.classList.remove('show');
   music.start();
+  $('#shiftHeading').focus({preventScroll:true});
 }
 
 $('#startShift').addEventListener('click',closeBriefing);

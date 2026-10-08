@@ -58,7 +58,17 @@ function game() {
   const timers = [];
   const element = selector => {
     if (!elements.has(selector)) elements.set(selector, {
-      style: {}, classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
+      style: {}, classList: {
+        values: new Set(),
+        add(...names) { for (const name of names) this.values.add(name); },
+        remove(...names) { for (const name of names) this.values.delete(name); },
+        toggle(name, force) {
+          const enabled = force === undefined ? !this.values.has(name) : force;
+          if (enabled) this.values.add(name); else this.values.delete(name);
+          return enabled;
+        },
+        contains(name) { return this.values.has(name); }
+      },
       addEventListener(type, handler) { (this.listeners ||= {})[type] = handler; }, setAttribute() {},
       focus(options) { this.focused = true; this.focusOptions = options; },
       scrollIntoView(options) { this.scrollOptions = options; },
@@ -189,6 +199,8 @@ test('three shifts advance manually, reset state, complete, and replay from Shif
 
   assert.equal(g.run('state.shift'), 0);
   assert.equal(g.element('#shiftHeading').textContent, 'FINAL DESK — SHIFT 1 · LEARNING');
+  assert.equal(g.element('#briefingTitle').textContent, 'SHIFT 1 — LEARNING THE JOB');
+  assert.match(g.element('#briefingCopy').textContent, /read each regulation/);
   complete(['RETURN', 'DELIVER', 'QUARANTINE']);
   assert.equal(g.run('state.processed'), 3);
   assert.match(g.element('#summary').innerHTML, /NEXT SHIFT/);
@@ -201,6 +213,13 @@ test('three shifts advance manually, reset state, complete, and replay from Shif
   assert.equal(g.run('state.history.length'), 0);
   assert.equal(g.element('#shiftHeading').textContent, 'FINAL DESK — SHIFT 2 · APPLYING');
   assert.equal(g.element('#briefingSubtitle').textContent, 'NIGHT PARCEL OFFICE · SHIFT 2 · APPLYING BRIEFING');
+  assert.equal(g.element('#briefingTitle').textContent, 'SHIFT 2 — APPLYING REGULATIONS');
+  assert.match(g.element('#briefingCopy').textContent, /same regulations remain in force/i);
+  assert.equal(g.element('#startShift').textContent, 'BEGIN SHIFT 2');
+  assert.equal(g.element('#briefingOverlay').classList.contains('show'), true);
+  assert.equal(g.element('#startShift').focused, true);
+  g.click('#startShift');
+  assert.equal(g.element('#briefingOverlay').classList.contains('show'), false);
   assert.equal(g.element('#shiftHeading').focused, true);
 
   complete(['QUARANTINE', 'DELIVER', 'QUARANTINE']);
@@ -219,9 +238,17 @@ test('three shifts advance manually, reset state, complete, and replay from Shif
   assert.equal(g.run('state.complaints.length'), 0);
   assert.equal(g.element('#shiftHeading').textContent, 'FINAL DESK — SHIFT 3 · MASTERING');
   assert.equal(g.element('#briefingSubtitle').textContent, 'NIGHT PARCEL OFFICE · SHIFT 3 · MASTERING BRIEFING');
+  assert.equal(g.element('#briefingTitle').textContent, 'SHIFT 3 — CHECKING RECIPIENTS');
+  assert.match(g.element('#briefingCopy').textContent, /require inspection/i);
+  assert.equal(g.element('#startShift').textContent, 'BEGIN SHIFT 3');
+  assert.equal(g.element('#briefingOverlay').classList.contains('show'), true);
+  assert.equal(g.element('#startShift').focused, true);
+  g.click('#startShift');
 
   complete(['DELIVER', 'RETURN', 'QUARANTINE']);
+  assert.match(g.element('#summary').innerHTML, /SHIFT 3 ASSESSMENT — MASTERING/);
   assert.match(g.element('#summary').innerHTML, /NIGHT SHIFT COMPLETE/);
+  assert.match(g.element('#summary').innerHTML, /paperwork is immaculate/);
   assert.match(g.element('#summary').innerHTML, /REPLAY FROM SHIFT 1/);
   assert.equal(g.element('#resultsHeading').focused, true);
   assert.equal(g.element('#summary').scrollOptions.behavior, 'auto');
