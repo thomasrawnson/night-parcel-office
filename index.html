@@ -272,7 +272,7 @@ button{touch-action:manipulation}
   <div class="top">
     <div>
       <div class="kicker">NIGHT PARCEL OFFICE · LOWER SORTING</div>
-      <h1>FINAL DESK — SHIFT 04</h1>
+      <h1 id="shiftHeading" tabindex="-1">FINAL DESK — SHIFT 1 · LEARNING</h1>
     </div>
     <div class="meta">
       PARCEL <b id="count">1 / 6</b><br>
@@ -350,7 +350,7 @@ button{touch-action:manipulation}
 <div class="briefing-overlay" id="briefingOverlay" role="dialog" aria-modal="true" aria-labelledby="briefingTitle">
   <div class="briefing-card">
     <h2 id="briefingTitle">WELCOME TO FINAL DESK</h2>
-    <div class="sub">NIGHT PARCEL OFFICE · SHIFT 04 BRIEFING</div>
+    <div class="sub" id="briefingSubtitle">NIGHT PARCEL OFFICE · SHIFT 1 · LEARNING BRIEFING</div>
 
     <div class="briefing-steps">
       <div class="brief-step"><b>1 · CHECK</b><span>Compare the parcel's labelled fields with tonight's regulations.</span></div>
@@ -484,11 +484,77 @@ const parcels = [
       state.final=action;
       state.inc.push('One impossible route formally acknowledged.');
     }
+  },
+  {
+    id:'07', sender:'A. Finch', recipient:'D. Moss', dest:'4 Station Terrace',
+    weight:'2.4 kg', handling:'STANDARD', l17:'—', origin:'LOCAL', contents:'PERSONAL',
+    marks:['STANDARD'], cls:'',
+    odd:'A plain brown parcel. It appears comfortable with this.',
+    back:'BACK: One tea ring. No further information.',
+    inspect:{
+      weigh:'WEIGHT: 2.4 kg.',
+      listen:'Nothing. Reassuringly nothing.',
+      directory:'RECIPIENT STATUS: ACTIVE.',
+      poke:'Ordinary cardboard. A departmental rarity.'
+    }
+  },
+  {
+    id:'08', sender:'Moonlight Pets', recipient:'S. Khan', dest:'9 Lantern Close',
+    weight:'1.6 kg', handling:'STANDARD', l17:'MISSING', origin:'LOCAL', contents:'LIVE',
+    marks:['LIVE CARGO'], cls:'wiggle',
+    odd:'Something inside is reorganising the packing straw.',
+    back:'BACK: L-17 declaration box left blank.',
+    inspect:{
+      weigh:'WEIGHT: 1.6 kg. The reading will not sit still.',
+      listen:'Scratching, followed by a small administrative cough.',
+      directory:'RECIPIENT STATUS: ACTIVE.',
+      poke:'The parcel moves away from your finger.'
+    }
+  },
+  {
+    id:'09', sender:'E. Mercer', recipient:'Nora Bell', dest:'31 Chapel Street',
+    weight:'0.7 kg', handling:'STANDARD', l17:'—', origin:'LOCAL', contents:'PERSONAL',
+    recipientStatus:'CHECK DIRECTORY', directoryStatus:'ACTIVE', marks:['PERSONAL'], cls:'',
+    odd:'The address has been written in careful blue ink.',
+    back:'BACK: “Please confirm recipient before delivery.”',
+    inspect:{
+      weigh:'WEIGHT: 0.7 kg.',
+      listen:'A folded card shifts inside.',
+      directory:'RECIPIENT STATUS: ACTIVE. Address confirmed.',
+      poke:'The parcel remains professionally neutral.'
+    }
+  }
+];
+
+const shiftPlan = [
+  {
+    number:1, title:'LEARNING',
+    entries:[
+      {parcelId:'01', regulationIndex:0},
+      {parcelId:'07', regulationIndex:0},
+      {parcelId:'08', regulationIndex:0}
+    ]
+  },
+  {
+    number:2, title:'APPLYING',
+    entries:[
+      {parcelId:'02', regulationIndex:0},
+      {parcelId:'04', regulationIndex:0},
+      {parcelId:'03', regulationIndex:0}
+    ]
+  },
+  {
+    number:3, title:'MASTERING',
+    entries:[
+      {parcelId:'09', regulationIndex:4},
+      {parcelId:'05', regulationIndex:4},
+      {parcelId:'06', regulationIndex:5}
+    ]
   }
 ];
 
 const state={
-  i:0,lock:false,processed:0,deliver:0,return:0,quarantine:0,errors:0,
+  shift:0,i:0,lock:false,processed:0,deliver:0,return:0,quarantine:0,errors:0,
   nibbles:false,mirror:false,edith:null,final:null,complaints:[],complaintAdded:false,inc:[],
   history:[], tutorial:true
 };
@@ -497,17 +563,52 @@ const $=s=>document.querySelector(s);
 const parcel=$('#parcel'),label=$('#label'),odd=$('#oddity'),backLabel=$('#backLabel');
 const result=$('#result'),toast=$('#toast'),speech=$('#speech');
 
-function current(){return parcels[state.i]}
+function activeShift(){return shiftPlan[state.shift]}
+function currentEntry(){return activeShift().entries[state.i]}
+function current(){
+  const entry=currentEntry();
+  return entry&&parcels.find(p=>p.id===entry.parcelId);
+}
+function currentRegulationIndex(){return currentEntry().regulationIndex}
+
+function resetShiftState(tutorial=false){
+  Object.assign(state,{
+    i:0,lock:false,processed:0,deliver:0,return:0,quarantine:0,errors:0,
+    nibbles:false,mirror:false,edith:null,final:null,complaints:[],complaintAdded:false,inc:[],
+    history:[],tutorial
+  });
+  $('#cageEyes').classList.remove('show');
+  $('#complaints').innerHTML='';
+}
+
+function startShift(shiftIndex,{tutorial=false,moveFocus=true}={}){
+  state.shift=shiftIndex;
+  resetShiftState(tutorial);
+  const shift=activeShift();
+  const summary=$('#summary');
+  summary.classList.remove('show');
+  summary.innerHTML='';
+  $('#game').style.display='';
+  const heading=$('#shiftHeading');
+  heading.textContent=`FINAL DESK — SHIFT ${shift.number} · ${shift.title}`;
+  $('#briefingSubtitle').textContent=`NIGHT PARCEL OFFICE · SHIFT ${shift.number} · ${shift.title} BRIEFING`;
+  showParcel();
+  if(moveFocus){
+    heading.scrollIntoView({block:'start',behavior:'auto'});
+    heading.focus({preventScroll:true});
+  }
+}
 
 function renderRules(){
-  const rules=activeRegulations(state.i);
+  const regulationIndex=currentRegulationIndex();
+  const rules=activeRegulations(regulationIndex);
 
   $('#rules').innerHTML=rules.map((r,index)=>`
-    <div class="rule ${r.c}${state.tutorial && state.i===0 && index===0?' tutorial-focus':''}">
+    <div class="rule ${r.c}${state.tutorial && state.shift===0 && state.i===0 && index===0?' tutorial-focus':''}">
       <b>${r.t}</b>
       <div class="formula">${r.f}</div>
     </div>`).join('') +
-    (state.i===5 ? `
+    (regulationIndex===5 ? `
       <div class="rule amend">
         <b>HANDWRITTEN NOTE</b>
         <div class="formula">Do <em>NOT</em> look behind you.</div>
@@ -519,13 +620,13 @@ function reverseText(t){
 }
 
 function showParcel(){
-  if(state.i>=parcels.length){endShift();return}
+  if(state.i>=activeShift().entries.length){endShift();return}
   const p=current();
   if(p.onShow)p.onShow(state,p);
 
   renderRules();
-  $('#count').textContent=`${state.i+1} / ${parcels.length}`;
-  $('#bar').style.width=`${state.i/parcels.length*100}%`;
+  $('#count').textContent=`${state.i+1} / ${activeShift().entries.length}`;
+  $('#bar').style.width=`${state.i/activeShift().entries.length*100}%`;
   $('#incidents').textContent=state.inc.length;
   result.innerHTML='Pick a tool only if you need it.';
   const feedback=$('#routingFeedback');feedback.className='feedback-strip';feedback.textContent='';
@@ -544,8 +645,8 @@ function showParcel(){
       <div class="f"><b>TO</b>${p.recipient}</div>
     </div>
     <div class="facts">
-      <div class="fact${state.tutorial && state.i===0?' tutorial-focus':''}"><b>WEIGHT</b>${p.weight}</div>
-      <div class="fact${state.tutorial && state.i===0?' tutorial-focus':''}"><b>HANDLING</b>${p.handling}</div>
+      <div class="fact${state.tutorial && state.shift===0 && state.i===0?' tutorial-focus':''}"><b>WEIGHT</b>${p.weight}</div>
+      <div class="fact${state.tutorial && state.shift===0 && state.i===0?' tutorial-focus':''}"><b>HANDLING</b>${p.handling}</div>
       <div class="fact"><b>L-17</b>${p.l17}</div>
       <div class="fact"><b>ORIGIN</b>${p.origin}</div>
       <div class="fact"><b>CONTENTS</b>${p.contents}</div>
@@ -558,18 +659,15 @@ function showParcel(){
 
   $('#complaints').innerHTML=state.complaints.slice(-2).map(c=>`<div class="complaint">${c}</div>`).join('');
 
-  $('#window').classList.toggle('silhouette',state.i===5);
+  $('#window').classList.toggle('silhouette',p.id==='06');
 
   const tutorial=$('#tutorialBanner');
-  tutorial.classList.toggle('show',state.tutorial && state.i===0);
+  tutorial.classList.toggle('show',state.tutorial && state.shift===0 && state.i===0);
 
-  if(state.mirror && state.i===3){
-    say('ADDRESS PRINTER FAULT. Management has blamed humidity.');
-  }
-  if(state.i===4){
+  if(state.shift===2 && state.i===0){
     setTimeout(()=>say('NEW REGULATION PINNED: DECEASED RECIPIENT.'),250);
   }
-  if(state.i===5){
+  if(p.id==='06'){
     setTimeout(()=>say('NEW REGULATION PINNED: IMPOSSIBLE ROUTE.'),250);
   }
 }
@@ -640,18 +738,18 @@ document.querySelectorAll('[data-tool]').forEach(btn=>{
 
     if(tool==='poke'){
       parcel.classList.remove('poked');void parcel.offsetWidth;parcel.classList.add('poked');
-      if(state.i===1){
+      if(p.id==='02'){
         parcel.classList.add('show-paw');
         bubble('OW.');
-      }else if(state.i===5){
+      }else if(p.id==='06'){
         bubble('That was rude.');
       }
     }
 
     if(tool==='listen'){
-      if(state.i===1)bubble('mrrp.');
-      if(state.i===2)bubble('...hello?');
-      if(state.i===5){bubble('DON’T TURN AROUND.');noise('knock')}
+      if(p.id==='02')bubble('mrrp.');
+      if(p.id==='03')bubble('...hello?');
+      if(p.id==='06'){bubble('DON’T TURN AROUND.');noise('knock')}
     }
   });
 });
@@ -668,12 +766,12 @@ function choose(action){
 
   state.processed++;
   state[action.toLowerCase()]++;
-  const decision=routeParcel(p,state.i);
+  const decision=routeParcel(p,currentRegulationIndex());
   const isCorrect=action===decision.action;
   if(!isCorrect)state.errors++;
   state.history.push({id:p.id,parcel:p.recipient||p.dest,chosen:action,expected:decision.action,correct:isCorrect,reason:decision.reason});
   if(p.choice)p.choice(action,state);
-  if(state.i===0){
+  if(state.shift===0&&state.i===0){
     state.tutorial=false;
   }
 
@@ -689,7 +787,7 @@ function choose(action){
   if(action==='QUARANTINE'){
     const cage=$('#cage');
     cage.classList.remove('rattle');void cage.offsetWidth;cage.classList.add('rattle');
-    if(state.i===1)$('#cageEyes').classList.add('show');
+    if(p.id==='02')$('#cageEyes').classList.add('show');
   }
 
   say(isCorrect?'Routing accepted.':'Routing recorded. Compliance has declined to comment.');
@@ -706,6 +804,8 @@ function choose(action){
 
 function endShift(){
   $('#game').style.display='none';
+  const shift=activeShift();
+  const finalShift=state.shift===shiftPlan.length-1;
   const correct=state.processed-state.errors;
   const accuracy=state.processed?Math.round(correct/state.processed*100):0;
 
@@ -721,14 +821,16 @@ function endShift(){
   if(state.edith==='DELIVER')incidents.push('Mail delivered to a deceased recipient; receipt pending.');
   if(!incidents.length)incidents.push('No supernatural incidents officially recognised.');
 
-  const hook=state.edith==='DELIVER'?'At 02:31 a receipt arrives from Arthur Vale.':'At 02:31 three knocks sound from behind the frosted window.';
+  let hook='The sorting tray is clear. Management has found another one.';
+  if(state.shift===1)hook=state.nibbles?'A complaint about Mr Nibbles has been attached to your file.':'Mr Nibbles continues toward his medication.';
+  if(state.shift===2)hook=state.edith==='DELIVER'?'At 02:31 a receipt arrives from Arthur Vale.':'At 02:31 three knocks sound from behind the frosted window.';
   const reviewRows=state.history.map(h=>`<div class="review-row"><span><b>Parcel ${h.id}</b> — ${h.parcel}</span><span class="${h.correct?'ok':'no'}">${h.chosen}</span><span>${h.expected}</span><span>${h.correct?'✓ Correct':'✕ '+h.reason}</span></div>`).join('');
   const misses=state.history.filter(h=>!h.correct).length;
 
   const summary=$('#summary');
   summary.innerHTML=`
     <h2 id="resultsHeading" tabindex="-1">NIGHT PARCEL OFFICE — SHIFT ASSESSMENT</h2>
-    <div class="kicker" style="color:#686b62;margin-top:4px">FINAL DESK · SHIFT 04 · PERFORMANCE REVIEW</div>
+    <div class="kicker" style="color:#686b62;margin-top:4px">FINAL DESK · SHIFT ${shift.number} · ${shift.title} · PERFORMANCE REVIEW</div>
     <div class="results-hero">
       <div class="score-ring" style="--score:${accuracy}"><div class="score-value">${accuracy}%<small>ROUTING ACCURACY</small></div></div>
       <div><div class="grade">${grade}</div><div class="verdict">${verdict}</div><div class="results-note"><b>${correct} of ${state.processed}</b> parcels matched the shift regulations. ${misses?`${misses} decision${misses===1?' needs':'s need'} review below.`:'No routing corrections required.'}</div></div>
@@ -742,11 +844,15 @@ function endShift(){
     <div class="review"><h3>ROUTING REVIEW</h3><div class="review-row header"><span>PARCEL</span><span>YOU CHOSE</span><span>EXPECTED</span><span>REVIEW</span></div>${reviewRows}</div>
     <h3>INCIDENT REPORT</h3><ul>${incidents.map(i=>`<li>${i}</li>`).join('')}</ul>
     <p><b>${hook}</b></p><p>Management has elected not to investigate further.</p>
-    <button class="restart" id="restart">ANOTHER SHIFT</button>`;
+    ${finalShift?'<div class="results-note"><b>NIGHT SHIFT COMPLETE</b><br>All three shifts have been processed.</div>':''}
+    <button class="restart" id="shiftAction">${finalShift?'REPLAY FROM SHIFT 1':'NEXT SHIFT'}</button>`;
   summary.classList.add('show');
   summary.scrollIntoView({block:'start',behavior:'auto'});
   $('#resultsHeading').focus({preventScroll:true});
-  $('#restart').addEventListener('click',()=>location.reload());
+  $('#shiftAction').addEventListener('click',()=>{
+    if(finalShift)location.reload();
+    else startShift(state.shift+1);
+  });
 }
 
 let minute=13;
@@ -779,14 +885,9 @@ function closeBriefing(){
 $('#startShift').addEventListener('click',closeBriefing);
 $('#helpToggle').addEventListener('click',openBriefing);
 
-if(briefingWasSkipped()){
-  state.tutorial=false;
-}else{
-  openBriefing();
-}
-
-renderRules();
-showParcel();
+const showInitialBriefing=!briefingWasSkipped();
+startShift(0,{tutorial:showInitialBriefing,moveFocus:false});
+if(showInitialBriefing)openBriefing();
 </script>
 </body>
 </html>

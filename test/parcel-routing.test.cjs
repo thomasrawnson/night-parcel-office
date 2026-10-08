@@ -59,7 +59,7 @@ function game() {
   const element = selector => {
     if (!elements.has(selector)) elements.set(selector, {
       style: {}, classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
-      addEventListener() {}, setAttribute() {},
+      addEventListener(type, handler) { (this.listeners ||= {})[type] = handler; }, setAttribute() {},
       focus(options) { this.focused = true; this.focusOptions = options; },
       scrollIntoView(options) { this.scrollOptions = options; },
       innerHTML: '', textContent: ''
@@ -68,7 +68,7 @@ function game() {
   };
   const context = vm.createContext({
     document: { querySelector: element, querySelectorAll: () => [], addEventListener() {} },
-    window: {}, localStorage: { getItem: () => null },
+    window: {}, location: { reload() { this.reloaded = true; } }, localStorage: { getItem: () => null },
     setTimeout(fn, delay) { if (delay === 460 || delay === 420) timers.push(fn); },
     clearTimeout() {}, setInterval() {}
   });
@@ -77,14 +77,30 @@ function game() {
   return {
     run: code => vm.runInContext(code, context),
     element,
+    click(selector) { element(selector).listeners?.click?.(); },
     advance() { while (timers.length) timers.shift()(); }
   };
+}
+
+function legacyGame() {
+  const g = game();
+  g.run(`shiftPlan.splice(0, shiftPlan.length, {
+    number: 1, title: 'LEGACY', entries: [
+      { parcelId: '01', regulationIndex: 0 },
+      { parcelId: '02', regulationIndex: 1 },
+      { parcelId: '03', regulationIndex: 2 },
+      { parcelId: '04', regulationIndex: 3 },
+      { parcelId: '05', regulationIndex: 4 },
+      { parcelId: '06', regulationIndex: 5 }
+    ]
+  }); startShift(0, { tutorial: true, moveFocus: false });`);
+  return g;
 }
 
 test('browser loads the shared rules and actual parcels retain every answer and reason', () => {
   assert.ok(html.indexOf('<script src="parcel-routing.js"></script>') < html.indexOf('<script>'));
   const g = game();
-  const decisions = JSON.parse(g.run('JSON.stringify(parcels.map((p,i)=>routeParcel(p,i)))'));
+  const decisions = JSON.parse(g.run('JSON.stringify(parcels.slice(0,6).map((p,i)=>routeParcel(p,i)))'));
   assert.deepEqual(decisions, expected.map((action, i) => ({ action, reason: reasons[i] })));
   assert.equal(g.run('parcels.some(p=>Object.hasOwn(p,"correct"))'), false);
   // Verify scoring consumes the module result, rather than a second implementation.
@@ -93,10 +109,37 @@ test('browser loads the shared rules and actual parcels retain every answer and 
   assert.match(g.element('#routingFeedback').textContent, /Correct routing/);
 });
 
+test('three-shift plan has nine deterministic outcomes and matching visible regulations', () => {
+  const g = game();
+  const planned = JSON.parse(g.run(`JSON.stringify(shiftPlan.map(shift => ({
+    number: shift.number,
+    entries: shift.entries.map(entry => {
+      const parcel = parcels.find(p => p.id === entry.parcelId);
+      return { ...entry, ...routeParcel(parcel, entry.regulationIndex) };
+    })
+  })))`));
+  assert.deepEqual(planned.map(s => s.entries.map(e => [e.parcelId, e.regulationIndex, e.action])), [
+    [['01', 0, 'RETURN'], ['07', 0, 'DELIVER'], ['08', 0, 'QUARANTINE']],
+    [['02', 0, 'DELIVER'], ['04', 0, 'DELIVER'], ['03', 0, 'QUARANTINE']],
+    [['09', 4, 'DELIVER'], ['05', 4, 'RETURN'], ['06', 5, 'QUARANTINE']]
+  ]);
+  assert.equal(g.run('parcels.length'), 9);
+
+  for (let shift = 0; shift < planned.length; shift++) {
+    for (let parcel = 0; parcel < planned[shift].entries.length; parcel++) {
+      g.run(`state.shift=${shift}; state.i=${parcel}; showParcel()`);
+      const regulationIndex = planned[shift].entries[parcel].regulationIndex;
+      assert.equal(g.run('currentRegulationIndex()'), regulationIndex);
+      const titles = activeRegulations(regulationIndex).map(rule => rule.t);
+      for (const title of titles) assert.match(g.element('#rules').innerHTML, new RegExp(`>${title}<`));
+    }
+  }
+});
+
 test('all 729 routing sequences preserve scoring, feedback, incidents and shift progression', () => {
   const actions = ['DELIVER', 'RETURN', 'QUARANTINE'];
   for (let sequence = 0; sequence < 3 ** 6; sequence++) {
-    const g = game();
+    const g = legacyGame();
     let code = sequence;
     let errors = 0;
     const chosen = [];
@@ -133,4 +176,55 @@ test('all 729 routing sequences preserve scoring, feedback, incidents and shift 
     assert.equal(g.element('#resultsHeading').focused, true);
     assert.equal(g.element('#resultsHeading').focusOptions.preventScroll, true);
   }
+});
+
+test('three shifts advance manually, reset state, complete, and replay from Shift 1', () => {
+  const g = game();
+  const complete = actions => {
+    for (const action of actions) {
+      g.run(`choose('${action}')`);
+      g.advance();
+    }
+  };
+
+  assert.equal(g.run('state.shift'), 0);
+  assert.equal(g.element('#shiftHeading').textContent, 'FINAL DESK — SHIFT 1 · LEARNING');
+  complete(['RETURN', 'DELIVER', 'QUARANTINE']);
+  assert.equal(g.run('state.processed'), 3);
+  assert.match(g.element('#summary').innerHTML, /NEXT SHIFT/);
+  assert.equal(g.element('#resultsHeading').focused, true);
+  assert.equal(g.element('#summary').scrollOptions.block, 'start');
+
+  g.click('#shiftAction');
+  assert.equal(g.run('state.shift'), 1);
+  assert.equal(g.run('state.processed'), 0);
+  assert.equal(g.run('state.history.length'), 0);
+  assert.equal(g.element('#shiftHeading').textContent, 'FINAL DESK — SHIFT 2 · APPLYING');
+  assert.equal(g.element('#briefingSubtitle').textContent, 'NIGHT PARCEL OFFICE · SHIFT 2 · APPLYING BRIEFING');
+  assert.equal(g.element('#shiftHeading').focused, true);
+
+  complete(['QUARANTINE', 'DELIVER', 'QUARANTINE']);
+  assert.equal(g.run('state.nibbles'), true);
+  assert.equal(g.run('state.complaints.length'), 1);
+  assert.equal(g.run('state.errors'), 1);
+
+  g.click('#shiftAction');
+  assert.equal(g.run('state.shift'), 2);
+  assert.equal(g.run('state.processed'), 0);
+  assert.equal(g.run('state.errors'), 0);
+  assert.equal(g.run('state.history.length'), 0);
+  assert.equal(g.run('state.inc.length'), 0);
+  assert.equal(g.run('state.nibbles'), false);
+  assert.equal(g.run('state.mirror'), false);
+  assert.equal(g.run('state.complaints.length'), 0);
+  assert.equal(g.element('#shiftHeading').textContent, 'FINAL DESK — SHIFT 3 · MASTERING');
+  assert.equal(g.element('#briefingSubtitle').textContent, 'NIGHT PARCEL OFFICE · SHIFT 3 · MASTERING BRIEFING');
+
+  complete(['DELIVER', 'RETURN', 'QUARANTINE']);
+  assert.match(g.element('#summary').innerHTML, /NIGHT SHIFT COMPLETE/);
+  assert.match(g.element('#summary').innerHTML, /REPLAY FROM SHIFT 1/);
+  assert.equal(g.element('#resultsHeading').focused, true);
+  assert.equal(g.element('#summary').scrollOptions.behavior, 'auto');
+  g.click('#shiftAction');
+  assert.equal(g.run('location.reloaded'), true);
 });
